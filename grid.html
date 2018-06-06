@@ -180,8 +180,8 @@ canvasGridLayer.on('mousedown', function(evt)
                text.text('X');
                text.x(box.attrs.x);
                text.y(box.attrs.y);
-
                gridTextGroup.add(text);
+               gridTextGroup.draw();
            //}
        break;
        case 'eraser':
@@ -231,8 +231,8 @@ canvasGridLayer.on('mouseover', function(evt) {
                text.x(box.attrs.x);
                text.y(box.attrs.y);
                text.name='customText';
-               text.draw();
                gridTextGroup.add(text);
+               gridTextGroup.draw();
               //
             //}
        break;
