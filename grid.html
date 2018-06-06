@@ -182,20 +182,10 @@ canvasGridLayer.on('mousedown', function(evt)
            //}
        break;
        case 'eraser':
-          if(box.filled == true)
-          {
-//            Konva.Node.prototype.remove.call(text);
-//            canvasGridLayer.draw();
-             // box.attrs.text= ' ' ;
-             // box.partialText=' ';
-             // box.textArr=[ ];
-             //
-             // text.attrs.text= ' ' ;
-             // text.partialText=' ';
-             // text.textArr=[ ];
-             // text.draw();
 
-           }
+            text.destroy();
+            canvasGridLayer.draw();
+      //  }
        break;
        case 'hand':
          console.log('Hand Mode!');
@@ -240,11 +230,10 @@ canvasGridLayer.on('mouseover', function(evt) {
             //}
        break;
        case 'eraser':
-          if(box.filled == true)
-           {
-               Konva.Node.prototype.remove.call(text);
-                 canvasGridLayer.draw();
-           }
+                text.destroy();
+               //Konva.Node.prototype.remove.call(text);
+               canvasGridLayer.draw();
+          // }
        break;
        case 'hand':
          console.log('Hand Mode!');
