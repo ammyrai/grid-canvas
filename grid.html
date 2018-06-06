@@ -210,8 +210,8 @@ canvasGridLayer.on('mouseover', function(evt) {
     switch (mode)
     {
        case 'pencil':
-            //if(box.filled !== true)
-            //{
+            if(box.filled !== true)
+            {
             box.shadowEnabled(false);
             box['filled'] = true;
             text = new Konva.Text({
@@ -227,13 +227,16 @@ canvasGridLayer.on('mouseover', function(evt) {
              gridTextGroup.add(text);
              canvasGridLayer.draw();
               //
-            //}
+            }
        break;
        case 'eraser':
-                text.destroy();
-               //Konva.Node.prototype.remove.call(text);
-               canvasGridLayer.draw();
-          // }
+
+                console.log(box);
+
+                  Konva.Text.prototype.remove.call(text);
+                 //Konva.Node.prototype.remove.call(text);
+                 canvasGridLayer.draw();
+
        break;
        case 'hand':
          console.log('Hand Mode!');
