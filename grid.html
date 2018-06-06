@@ -116,23 +116,13 @@ backgroundCanvas.add(stageRect);
 
 /*  Layer2 Create a grid on canvas work starts here!*/
 
-text = new Konva.Text({
-  text: '',
-  x: '',
-  y: '',
-  fontFamily: 'sans-serif',
-  fontSize: gridSize,
-  fill: textFillColor,
-  fontStyle : 'normal'
-});
-
 for (var ix = 0; ix < canvasWidth; ix++) {
     for (var iy = 0; iy < canvasHeight; iy++) {
       box = new Konva.Rect({
           x : ix * gridSize,
           y : iy * gridSize,
           width : gridSize ,
-          height: text.getHeight(),
+          height: gridSize,
           stroke: gridStrokeColor,
           strokeWidth: 0,
           lineJoin : 'round',
@@ -175,11 +165,18 @@ canvasGridLayer.on('mousedown', function(evt)
        case 'pencil':
            //if(box.filled !== true)
           // {
-               box.shadowEnabled(false);
-               box['filled'] = true;
-               text.text('X');
-               text.x(box.attrs.x);
-               text.y(box.attrs.y);
+              box.shadowEnabled(false);
+              box['filled'] = true;
+              text = new Konva.Text({
+                  text: 'X',
+                  x: box.attrs.x,
+                  y: box.attrs.y,
+                  fontFamily: 'sans-serif',
+                  fontSize: gridSize,
+                  fill: textFillColor,
+                  fontStyle : 'normal'
+                });
+               box.height = text.getHeight();
                gridTextGroup.add(text);
                canvasGridLayer.draw();
            //}
@@ -225,14 +222,20 @@ canvasGridLayer.on('mouseover', function(evt) {
        case 'pencil':
             //if(box.filled !== true)
             //{
-               box.shadowEnabled(false);
-               box['filled'] = true;
-               text.text('X');
-               text.x(box.attrs.x);
-               text.y(box.attrs.y);
-               text.name='customText';
-               gridTextGroup.add(text);
-               canvasGridLayer.draw();
+            box.shadowEnabled(false);
+            box['filled'] = true;
+            text = new Konva.Text({
+                text: 'X',
+                x: box.attrs.x,
+                y: box.attrs.y,
+                fontFamily: 'sans-serif',
+                fontSize: gridSize,
+                fill: textFillColor,
+                fontStyle : 'normal'
+              });
+             box.height = text.getHeight();
+             gridTextGroup.add(text);
+             canvasGridLayer.draw();
               //
             //}
        break;
