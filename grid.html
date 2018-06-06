@@ -2,7 +2,7 @@
         <link href="https://maxcdn.bootstrapcdn.com/font-awesome/4.4.0/css/font-awesome.min.css" rel="stylesheet">
 <script src="https://cdn.rawgit.com/konvajs/konva/2.1.3/konva.min.js"></script>
  <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.3.1/jquery.min.js"></script>
- <script src="//maxcdn.bootstrapcdn.com/bootstrap/3.3.7/js/bootstrap.min.js"></script>
+ <script src="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.7/js/bootstrap.min.js"></script>
  <style>
      /*  Color Pattel style  */
 
@@ -98,6 +98,11 @@ canvasGridLayer = new Konva.Layer();         //  a Layer2 for canvas Grid
 
 /*  Layers creation ends here! */
 
+/*  Create new group  */
+var gridRectGroup = new Konva.Group();
+var gridCircleGroup = new Konva.Group();
+var gridTextGroup = new Konva.Group();
+
 /*  Layer1 work starts here! */
 stageRect =  new Konva.Rect({
   x:0,
@@ -143,9 +148,8 @@ for (var ix = 0; ix < canvasWidth; ix++) {
         stroke: circleStrokeColor,
         strokeWidth: 1,
       });
-      canvasGridLayer.add(box);              // Add rectangle to background layer
-      canvasGridLayer.add(circle);              // Add rectangle to background layer
-      canvasGridLayer.add(text);
+      gridRectGroup.add(box);                   // Add rectangle to group
+      gridCircleGroup.add(circle);              // Add rectangle to group
     }
   }
 
@@ -176,16 +180,11 @@ canvasGridLayer.on('mousedown', function(evt)
                text.text('X');
                text.x(box.attrs.x);
                text.y(box.attrs.y);
-               canvasGridLayer.add(text);
-               text.draw();
+
+               gridTextGroup.add(text);
            //}
        break;
        case 'eraser':
-       // if(box.filled == true)
-       //  {
-          // console.log(box)
-
-           // console.log(Konva.Node.prototype.y.call(box));
           if(box.filled == true)
           {
 //            Konva.Node.prototype.remove.call(text);
@@ -200,18 +199,6 @@ canvasGridLayer.on('mousedown', function(evt)
              // text.draw();
 
            }
-   //}
-       // box.textArr=[];
-       // console.log(text.getAncestors());
-       // box.getAncestors().each(function(node) {
-       //  console.log(node.getId());
-       //  })
-          //console.log(Konva.Node.prototype)
-           //Konva.Node.prototype.remove.call(text);
-           // box.shadowEnabled(true);
-           // box.shadowColor(gridShadowColor);
-           // box.shadowOffset({ x: 3, y: 3 });
-           // canvasGridLayer.draw();
        break;
        case 'hand':
          console.log('Hand Mode!');
@@ -243,94 +230,18 @@ canvasGridLayer.on('mouseover', function(evt) {
                text.text('X');
                text.x(box.attrs.x);
                text.y(box.attrs.y);
-               text.name='customText'
-               canvasGridLayer.add(text);
+               text.name='customText';
                text.draw();
+               gridTextGroup.add(text);
+              //
             //}
        break;
        case 'eraser':
-
           if(box.filled == true)
            {
-            // console.log(box)
-
-              // console.log(Konva.Node.prototype.y.call(box));
-             // if(evt.target.className == 'Text')
-             // {
-
                Konva.Node.prototype.remove.call(text);
-               canvasGridLayer.draw();
-               // box.attrs.text= ' ' ;
-               // box.partialText=' ';
-               // box.textArr=[ ];
-               // box.fill(' ');
-               //
-               // text.fill(' ');
-               // text.attrs.text= ' ' ;
-               // text.partialText=' ';
-               // text.textArr=[ ];
-               // text.index = ' ';
-               // text.textHeight = ' ';
-               // text.textWidth = ' ';
-               // text.draw();
-               // Konva.Node.prototype.remove.call(text);
-               // box = new Konva.Rect({
-               //     x : box.attrs.x,
-               //     y : box.attrs.y,
-               //     width : box.attrs.width ,
-               //     height: box.attrs.height,
-               //     stroke: box.attrs.stroke,
-               //     strokeWidth: box.attrs.strokeWidth,
-               //     lineJoin : box.attrs.lineJoin,
-               //     shadowEnabled : box.attrs.shadowEnabled,
-               //     shadowColor: box.attrs.shadowColor,
-               //     shadowOffset: box.attrs.shadowOffset,
-               //     shadowOpacity: box.attrs.shadowOpacity
-               // });
-               // circle = new Konva.Circle({
-               //   x: box.attrs.x,
-               //   y: box.attrs.y,
-               //   radius: 2,
-               //   stroke: circleStrokeColor,
-               //   strokeWidth: 1,
-               // });
-               // canvasGridLayer.add(box);              // Add rectangle to background layer
-               // canvasGridLayer.add(circle);
-
-               //canvasGridLayer.draw();
-
-
-
-               // var idToRemove =  evt.target["_id"]
-               // if(evt.target.attrs.x === stage.attrs.x && evt.target.attrs.y === stage.attrs.y){
-               //
-               //   //Konva.Node.prototype.remove.call(evt.target);
-               //   //canvasGridLayer.draw();
-               // }
-
-               //console.log(evt);
-               // box.textArr=[]
-               //  box.partialText=''
-               //  box.__proto__.setText('')
-              //  Konva.Node.prototype.remove.call(text.x(box.attrs.x));
-                //canvasGridLayer.draw();
-            // }
-
-
-              //text.remove(index)
-              //Konva.Node.prototype.removeName('text')
-            // box.textArr=[]
-             //box.partialText=''
-             //box.__proto__.setText('')
-             // console.log(evt);
-             // Konva.Node.prototype.remove.call(text);
-             // box['filled'] = false;
-             // box.shadowEnabled(true);
-             // box.shadowColor(gridShadowColor);
-             // box.shadowOffset({  x: 3, y: 3 });
-             //canvasGridLayer.draw();
+                 canvasGridLayer.draw();
            }
-
        break;
        case 'hand':
          console.log('Hand Mode!');
@@ -344,7 +255,7 @@ canvasGridLayer.on('mouseover', function(evt) {
   }
 });
 /*  Layer2 Create a grid on canvas work ends here!*/
-
+canvasGridLayer.add(gridRectGroup,gridCircleGroup,gridTextGroup);   // Add Groups to layer
 stage.add(backgroundCanvas,canvasGridLayer);          // Add Layer to stage
 json = stage.toJSON();      // Save entire canvas as json
 //console.log(json);
