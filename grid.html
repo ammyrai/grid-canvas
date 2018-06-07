@@ -129,7 +129,8 @@ for (var ix = 0; ix < canvasWidth; ix++) {
           shadowEnabled : true,
           shadowColor: gridShadowColor,
           shadowOffset: {  x: 3,   y: 3 },
-          shadowOpacity: 1
+          shadowOpacity: 1,
+          filled : false,
       });
       circle = new Konva.Circle({
         x: box.attrs.x,
@@ -162,35 +163,37 @@ canvasGridLayer.on('mousedown', function(evt)
     box = evt.target;
     switch (mode)
     {
-       case 'pencil':
-           if(box.filled !== true)
+      case 'pencil':
+           if(box.attrs.filled == false)
            {
-              box.shadowEnabled(false);
-              box['filled'] = true;
-              text = new Konva.Text({
-                  text: 'X',
-                  x: box.attrs.x,
-                  y: box.attrs.y,
-                  fontFamily: 'sans-serif',
-                  fontSize: gridSize,
-                  fill: textFillColor,
-                  fontStyle : 'normal',
-                });
-               box.height = text.getHeight();
-               gridTextGroup.add(text);
-               canvasGridLayer.draw();
+             box.shadowEnabled(false);
+             text = new Konva.Text({
+                 text: 'X',
+                 x: box.attrs.x,
+                 y: box.attrs.y,
+                 fontFamily: 'sans-serif',
+                 fontSize: gridSize,
+                 fill: textFillColor,
+                 fontStyle : 'normal',
+                 filled : true
+             });
+             box.attrs.filled = true;
+             box.height = text.getHeight();
+             gridTextGroup.add(text);
+             canvasGridLayer.draw();
            }
-       break;
-       case 'eraser':
-       if(box.filled == true)
-       {
-            text.destroy();
-            box['filled'] = false;
-            gridRectGroup.add(box);
-            canvasGridLayer.draw();
-       }
-
-       break;
+      break;
+      case 'eraser':
+          if(box.attrs.filled == true)
+          {
+             if(evt.target.className == 'Text')
+             {
+                 evt.target.destroy();
+                 box.attrs.filled = false;
+             }
+          }
+      canvasGridLayer.draw();
+      break;
        case 'hand':
          console.log('Hand Mode!');
        break;
@@ -210,42 +213,43 @@ canvasGridLayer.on('mouseover', function(evt) {
   if (isMouseDown)
   {
     box = evt.target;
-
     switch (mode)
     {
        case 'pencil':
-            if(box.filled !== true)
+            if(box.attrs.filled == false)
             {
-            box.shadowEnabled(false);
-            box['filled'] = true;
-            text = new Konva.Text({
-                text: 'X',
-                x: box.attrs.x,
-                y: box.attrs.y,
-                fontFamily: 'sans-serif',
-                fontSize: gridSize,
-                fill: textFillColor,
-                fontStyle : 'normal',
+              box.shadowEnabled(false);
+              text = new Konva.Text({
+                  text: 'X',
+                  x: box.attrs.x,
+                  y: box.attrs.y,
+                  fontFamily: 'sans-serif',
+                  fontSize: gridSize,
+                  fill: textFillColor,
+                  fontStyle : 'normal',
+                  filled : true
               });
-
-             box.height = text.getHeight();
-             gridTextGroup.add(text);
-             canvasGridLayer.draw();
+              box.attrs.filled = true;
+              box.height = text.getHeight();
+              gridTextGroup.add(text);
+              canvasGridLayer.draw();
             }
        break;
        case 'eraser':
-       if(box.filled == true)
-       {
-          var textList = canvasGridLayer.find("Text");
-          $( textList ).each(function(key, val) {
-             val.on('mouseenter', function() {
-               val.destroy();
+           if(box.className == 'Rect' && box.attrs.filled == true)
+           {
+              var textList = canvasGridLayer.find("Text");
+              $( textList ).each(function(key, val) {
+                 val.on('mouseenter', function(evt) {
+                   if(evt.target.className == 'Text')
+                   {
+                     evt.target.destroy();
+                   }
+                 });
              });
-         });
-         gridRectGroup.add(box);
-         box['filled'] = false;
-       }
-     canvasGridLayer.draw();
+             box.attrs.filled = false;
+           }
+           canvasGridLayer.draw();
        break;
        case 'hand':
          console.log('Hand Mode!');
