@@ -5,7 +5,6 @@
  <script src="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.7/js/bootstrap.min.js"></script>
  <style>
      /*  Color Pattel style  */
-
 ul.my-new-list, ul.text-color-list {
     float: left;
     width: 100%;
@@ -68,8 +67,11 @@ var gridSize = 25,                      // Grid Tile Size
     gridShadowCPara,                    // Grid Stroke Color code parameter
     circleStrokeCPara,                  // Circle Stroke Color code parameter
     circleFillCPara,                    // Circle Fill Color code parameter
-    json;                               // Json variable for final canvas output
-
+    textFillCPara,                      // Text color fill parameter
+    json,                               // Json variable for final canvas output
+    posStart,
+    posNow,
+    rectPoints = [];
 /*
       =========================================================
       * canvasInit(Para1, Para2, Para3, Para3, Para4, Para5)
@@ -102,6 +104,8 @@ canvasGridLayer = new Konva.Layer();         //  a Layer2 for canvas Grid
 var gridRectGroup = new Konva.Group();
 var gridCircleGroup = new Konva.Group();
 var gridTextGroup = new Konva.Group();
+var gridcloneGroup = new Konva.Group({draggable: true});
+var gridLineGroup = new Konva.Group();
 
 /*  Layer1 work starts here! */
 stageRect =  new Konva.Rect({
@@ -113,7 +117,11 @@ stageRect =  new Konva.Rect({
 })
 backgroundCanvas.add(stageRect);
 /*  Layer1 work ends here! */
+textFillCPara = textFillColor;
+$(document).on('click','.text_color_pattel',function(){
+    text.fill = $(this).data("colorcode");
 
+})
 /*  Layer2 Create a grid on canvas work starts here!*/
 
 for (var ix = 0; ix < canvasWidth; ix++) {
@@ -131,6 +139,7 @@ for (var ix = 0; ix < canvasWidth; ix++) {
           shadowOffset: {  x: 3,   y: 3 },
           shadowOpacity: 1,
           filled : false,
+          lineDraw : false,
       });
       circle = new Konva.Circle({
         x: box.attrs.x,
@@ -144,7 +153,7 @@ for (var ix = 0; ix < canvasWidth; ix++) {
     }
   }
 
-
+// console.log(box)
 /*   Change tool mode function starts here!   */
 $(".canvas_tool").click(function(){
   $('.toolbar_list li').removeClass('active');
@@ -154,6 +163,21 @@ $(".canvas_tool").click(function(){
 });
 /*   Change tool mode function ends here!   */
 
+// draw a rectangle to be used as the rubber area
+var r2 = new Konva.Rect({x: 0, y: 0, width: 0, height: 0, stroke: 'red', dash: [2,2]})
+r2.listening(false); // stop r2 catching our mouse events.
+gridRectGroup.add(r2);
+
+var selected_rect = [];
+
+var line = new Konva.Line({
+    points :[],
+    stroke: 'red',
+    strokeWidth: 2,
+    drawLine : true,
+});
+gridRectGroup.add(line);
+var points =[];
 /*    Fill Grid cell   */
 canvasGridLayer.on('mousedown', function(evt)
 {
@@ -164,6 +188,7 @@ canvasGridLayer.on('mousedown', function(evt)
     switch (mode)
     {
       case 'pencil':
+           // stage.container().style.cursor = 'move';
            if(box.attrs.filled == false)
            {
              box.shadowEnabled(false);
@@ -190,32 +215,90 @@ canvasGridLayer.on('mousedown', function(evt)
              {
                  evt.target.destroy();
                  box.attrs.filled = false;
+                 box.shadowEnabled(true);
              }
           }
       canvasGridLayer.draw();
       break;
-       case 'hand':
-         console.log('Hand Mode!');
+       case 'select_shape':
+          startDrag({x: box.attrs.x, y: box.attrs.y})
+       break;
+       case 'back_stich':
+           line.attrs.drawLine = true;
+           var secondX = nearest(evt.evt.layerX,box.attrs.x,box.attrs.x+gridSize);
+           var secondY = nearest(evt.evt.layerY,box.attrs.y,box.attrs.y+gridSize);
+           line.points(points[box.attrs.x,box.attrs.y,secondX,secondY]);
+           canvasGridLayer.draw();
+           box.attrs.lineDraw = true;
        break;
        case 'text':
          console.log('Text Mode!');
        break;
        default:
-
+       // stage.container().style.cursor = 'pointer';
     }
   }
 });
 canvasGridLayer.on('mouseup',function(evt){
   isMouseDown= false
+  box = evt.target;
+
+  switch (mode)
+  {
+     case 'pencil':
+     break;
+     case 'eraser':
+     break;
+     case 'select_shape':
+       updateDrag({x: box.attrs.x, y: box.attrs.y},true)
+         var textList = canvasGridLayer.find("Text");
+
+         $( textList ).each(function(key, val) {
+           if(val.attrs.selected === 'selected')
+           {
+               var clonerect  = val.clone({x: val.attrs.x, y: val.attrs.y, name :'cloneRect'});
+               gridcloneGroup.add(clonerect);
+               canvasGridLayer.add(gridcloneGroup);
+               $( selected_rect ).each(function(key, rect) {
+                 if(rect.attrs.x === val.attrs.x && rect.attrs.y === val.attrs.y)
+                 {
+                   rect.attrs.filled = false;
+                   rect.attrs.shadowEnabled = true;
+                   rect.attrs.shadowColor = gridShadowColor;
+                   rect.attrs.shadowOffset = {  x: 3,   y: 3 };
+                   canvasGridLayer.draw();
+                 }
+                });
+               val.destroy();
+             }
+         })
+         r2.visible(true);
+         mode = '';
+         stage.draw();
+     break;
+     case 'back_stich':
+        line.attrs.drawLine = false;
+        line.attrs.close = true;
+        // var secondX = nearest(evt.evt.layerX,box.attrs.x,box.attrs.x+gridSize);
+        // var secondY = nearest(evt.evt.layerY,box.attrs.y,box.attrs.y+gridSize);
+        // points = [box.attrs.x,box.attrs.y,secondX,secondY];
+     break;
+     case 'text':
+       console.log('Text Mode!');
+     break;
+     default:
+     // stage.container().style.cursor = 'pointer';
+  }
 })
 
-canvasGridLayer.on('mouseover', function(evt) {
+canvasGridLayer.on('mousemove', function(evt) {
   if (isMouseDown)
   {
     box = evt.target;
     switch (mode)
     {
        case 'pencil':
+       stage.container().style.cursor = 'pencil.png';
             if(box.attrs.filled == false)
             {
               box.shadowEnabled(false);
@@ -227,13 +310,18 @@ canvasGridLayer.on('mouseover', function(evt) {
                   fontSize: gridSize,
                   fill: textFillColor,
                   fontStyle : 'normal',
-                  filled : true
+                  filled : true,
               });
               box.attrs.filled = true;
               box.height = text.getHeight();
               gridTextGroup.add(text);
               canvasGridLayer.draw();
+
             }
+            if(box.className === 'Rect' && box.attrs.filled === true)
+               {
+                  selected_rect.push(box);
+               }
        break;
        case 'eraser':
            if(box.className == 'Rect' && box.attrs.filled == true)
@@ -248,25 +336,91 @@ canvasGridLayer.on('mouseover', function(evt) {
                  });
              });
              box.attrs.filled = false;
+             box.shadowEnabled(true);
            }
            canvasGridLayer.draw();
        break;
-       case 'hand':
-         console.log('Hand Mode!');
+       case 'select_shape':
+          updateDrag({x: box.attrs.x, y: box.attrs.y},false)
+       break;
+       case 'back_stich':
+            line.attrs.drawLine = true;
+            if(line.attrs.drawLine === true)
+            {
+              // if(box.attrs.lineDraw === false)
+              // {
+                var secondX = nearest(evt.evt.layerX,box.attrs.x,box.attrs.x + gridSize);
+                var secondY = nearest(evt.evt.layerY,box.attrs.y,box.attrs.y + gridSize);
+                points.push(secondX,secondY);
+                line.points(points);
+                canvasGridLayer.draw();
+                line.attrs.drawLine = true;
+              // }
+            }
+
        break;
        case 'text':
          console.log('Text Mode!');
        break;
        default:
-
+       // stage.container().style.cursor = 'pointer';
     }
   }
 });
+//
+// function containsAll(needles, haystack){
+//   for(var i = 0 , len = needles.length; i < len; i++){
+//      if($.inArray(needles[i], haystack) == -1) return false;
+//   }
+//   return true;
+// }
+/*  Code for the select and drag designs starts here!  */
+gridcloneGroup.on('dragstart', function(e) {
+    r2.visible(false);
+});
+gridcloneGroup.on('dragend', function() {
+  gridcloneGroup.position({
+    x: Math.round(gridcloneGroup.x() / gridSize) * gridSize,
+    y: Math.round(gridcloneGroup.y() / gridSize) * gridSize
+  });
+  stage.batchDraw();
+  gridcloneGroup.draggable(false)
+});
+
+function updateDrag(posIn,updateSelect){
+  // update rubber rect position
+   posNow = {x: posIn.x, y: posIn.y};
+   var posRect = reverse(posStart,posNow);
+   r2.x(posRect.x1);
+   r2.y(posRect.y1);
+   r2.width(posRect.x2 - posRect.x1);
+   r2.height(posRect.y2 - posRect.y1);
+   r2.visible(true);
+   if(updateSelect == true){
+     var textList = canvasGridLayer.find("Text");
+     $( textList ).each(function(key, val) {
+       if(val.attrs.x >= r2.attrs.x && val.attrs.x < (r2.attrs.x+r2.attrs.width) && val.attrs.y >= r2.attrs.y && val.attrs.y < (r2.attrs.y+r2.attrs.height)){
+         val.attrs.selected = 'selected';
+       }
+     })
+     rectPoints.push(posNow);
+   }
+   stage.draw(); // redraw any changes.
+}
+/*  Code for the select and drag designs ends here! */
+
 /*  Layer2 Create a grid on canvas work ends here!*/
-canvasGridLayer.add(gridRectGroup,gridCircleGroup,gridTextGroup);   // Add Groups to layer
+canvasGridLayer.add(gridRectGroup,gridCircleGroup,gridTextGroup,gridLineGroup);   // Add Groups to layer
 stage.add(backgroundCanvas,canvasGridLayer);          // Add Layer to stage
 json = stage.toJSON();      // Save entire canvas as json
-//console.log(json);
+}
+
+function nearest(value, min, max){
+   if((value-min)>(max-value)){
+   return max
+   } else {
+   return min
+   }
 }
 /*
       ===============================
@@ -285,6 +439,90 @@ $( window ).on( "load", function() {
     canvasInit('white','#FFE793','#FFE9AD','#F7976F','#FED376','#000000');
 });
 
+/*  Code for the select and drag designs starts here!  */
+function startDrag(posIn){
+  posStart = {x: posIn.x, y: posIn.y};
+  posNow = {x: posIn.x, y: posIn.y};
+}
+
+function reverse(r1, r2){
+  var r1x = r1.x, r1y = r1.y, r2x = r2.x,  r2y = r2.y, d;
+  if (r1x > r2x ){
+    d = Math.abs(r1x - r2x);
+    r1x = r2x; r2x = r1x + d;
+  }
+  if (r1y > r2y ){
+    d = Math.abs(r1y - r2y);
+    r1y = r2y; r2y = r1y + d;
+  }
+    return ({x1: r1x, y1: r1y, x2: r2x, y2: r2y}); // return the corrected rect.
+}
+/*  Code for the select and drag designs ends here!  */
+
+$(function()
+{
+/*
+    ====================================================
+    Pass colors to canvasInit function from color pattel
+    ====================================================
+*/
+$(document).on('click', '.color_pattel',function() {
+  canvasBgColor = $(this).data("colorcode");
+  var colorType     =  $(this).data("type");
+  if(colorType == "white" || colorType == "black")        // set default colors if bg is of white or black color
+  {
+    gridStrokeCPara = '#FFE793';
+    gridShadowCPara = '#FFE9AD';
+    circleStrokeCPara = '#F7976F';
+    circleFillCPara = '#FED376';
+  }
+  else if(colorType == 'light')     // generate and set 20% darker shade if bg is of light color
+  {
+      // Create a 20% darker shade of light color
+      gridStrokeCPara = ColorLuminance(canvasBgColor, -0.2);
+      gridShadowCPara = ColorLuminance(gridStrokeCPara, -0.2);
+      circleStrokeCPara = ColorLuminance(gridShadowCPara, -0.2);
+      circleFillCPara = ColorLuminance(circleStrokeCPara, -0.2);
+  }
+  else                             // generate and set 100% lighter shade if bg is of dark color
+  {
+    // Create a 100% lighter shade of dark color
+    gridStrokeCPara = ColorLuminance(canvasBgColor, 0.10);
+    gridShadowCPara = ColorLuminance(gridStrokeCPara, 0.10);
+    circleStrokeCPara = ColorLuminance(gridShadowCPara, 0.10);
+    circleFillCPara = ColorLuminance(circleStrokeCPara, 0.10);
+  }
+  canvasInit(canvasBgColor,gridStrokeCPara,gridShadowCPara,circleStrokeCPara,circleFillCPara);
+  // Call to canvasInit function
+});
+
+/*
+    ============================================
+    Generate new color codes script starts here!
+    =============================================
+*/
+function ColorLuminance(hex, lum)
+{
+  // validate hex string
+	hex = String(hex).replace(/[^0-9a-f]/gi, '');
+
+	if (hex.length < 6) {
+		hex = hex[0]+hex[0]+hex[1]+hex[1]+hex[2]+hex[2];
+	}
+	lum = lum || 0;
+
+	// convert to decimal and change luminosity
+	var rgb = "#", c, i;
+	for (i = 0; i < 3; i++) {
+		c = parseInt(hex.substr(i*2,2), 16);
+		c = Math.round(Math.min(Math.max(0, c + (c * lum)), 255)).toString(16);
+		rgb += ("00"+c).substr(c.length);
+	}
+	return rgb;
+}
+/*  Generate new color codes script ends here!  */
+});
+
      </script>
 <div class="col-md-12 canvas_container">
                     <div class="col-md-6 float-left canvas_content">
@@ -293,19 +531,22 @@ $( window ).on( "load", function() {
                     <div class="col-md-2">
                         <h3>Toolbar Section</h3>
                         <ul class="toolbar_list" id="">
-                            <li class="canvas_tool active" id="pencil" data-mode="pencil">
+                            <li class="canvas_tool active" id="pencil" data-mode="pencil" title="pencil">
                                 <i class="fa fa-pencil" aria-hidden="true"></i>
                             </li>
-                            <li class="canvas_tool" id="eraser" data-mode="eraser">
+                            <li class="canvas_tool" id="eraser" data-mode="eraser" title="eraser">
                                 <i class="fa fa-eraser" aria-hidden="true"></i>
                             </li>
-                            <li class="canvas_tool" id="" data-mode="hand">
-                                <i class="fa fa-hand-rock-o" aria-hidden="true"></i></i>
+                            <li class="canvas_tool" id="select_shape" data-mode="select_shape" title="Select Shape">
+                              <img src="select.png" alt="select shape"/>
                             </li>
-                            <li class="canvas_tool" id="" data-mode="text">
+                            <li class="canvas_tool" id="back_stich" data-mode="back_stich" title="Back Stich">
+                              <img src="back_stich.png" alt="Back Stich" width='54px' height='41px' />
+                            </li>
+                            <li class="canvas_tool" id="" data-mode="text" title="Text">
                                 <i class="fa fa-text-width" aria-hidden="true"></i>
                             </li>
-                            <li class="canvas_tool" id="refresh_canvas" data-mode="refresh">
+                            <li class="canvas_tool" id="refresh_canvas" data-mode="refresh" title="Refresh">
                                 <i class="fa fa-refresh" aria-hidden="true"></i>
                             </li>
                         </ul>
@@ -317,6 +558,30 @@ $( window ).on( "load", function() {
                           <button class="btn btn-success show-colors-btn" data-toggle="collapse" data-target="#pattel_container"> + </button>
                         </p>
                         <div class="color_pattel_container collapse text-left" id="pattel_container">
+                            <ul class="my-new-list">
+                              <li class="color_pattel" data-floss="150" id="150" data-type="dark" data-colorcode="#AB0249" style="background-color:#AB0249"> </li>
+                              <li class="color_pattel" data-floss="151" id="151" data-type="light" data-colorcode="#F0CED4" style="background-color:#F0CED4"> </li>
+                              <li class="color_pattel" data-floss="152" id="152" data-type="light" data-colorcode="#E2A099" style="background-color:#E2A099"> </li>
+                              <li class="color_pattel" data-floss="153" id="153" data-type="light" data-colorcode="#E6CCD9" style="background-color:#E6CCD9"> </li>
+                              <li class="color_pattel" data-floss="154" id="154" data-type="dark" data-colorcode="#572433" style="background-color:#572433"> </li>
+                              <li class="color_pattel" data-floss="155" id="155" data-type="dark" data-colorcode="#9891B6" style="background-color:#9891B6"> </li>
+                              <li class="color_pattel" data-floss="156" id="156" data-type="light" data-colorcode="#A3AED1" style="background-color:#A3AED1"> </li>
+                              <li class="color_pattel" data-floss="157" id="157" data-type="light" data-colorcode="#BBC3D9" style="background-color:#BBC3D9"> </li>
+                              <li class="color_pattel" data-floss="158" id="158" data-type="dark" data-colorcode="#4C526E" style="background-color:#4C526E"> </li>
+                              <li class="color_pattel" data-floss="159" id="159" data-type="light" data-colorcode="#C7CAD7" style="background-color:#C7CAD7"> </li>
+                              <li class="color_pattel" data-floss="160" id="160" data-type="light" data-colorcode="#999FB7" style="background-color:#999FB7"> </li>
+                              <li class="color_pattel" data-floss="161" id="161" data-type="dark" data-colorcode="#7880A4" style="background-color:#7880A4"> </li>
+                              <li class="color_pattel" data-floss="162" id="162" data-type="light" data-colorcode="#DBECF5" style="background-color:#DBECF5"> </li>
+                              <li class="color_pattel" data-floss="163" id="163" data-type="dark" data-colorcode="#4D8361" style="background-color:#4D8361"> </li>
+                              <li class="color_pattel" data-floss="164" id="164" data-type="light" data-colorcode="#C8D8B8" style="background-color:#C8D8B8"> </li>
+                              <li class="color_pattel" data-floss="165" id="165" data-type="light" data-colorcode="#EFF4A4" style="background-color:#EFF4A4"> </li>
+                              <li class="color_pattel" data-floss="166" id="166" data-type="light" data-colorcode="#C0C840" style="background-color:#C0C840"> </li>
+                              <li class="color_pattel" data-floss="167" id="167" data-type="dark" data-colorcode="#A77C49" style="background-color:#A77C49"> </li>
+                              <li class="color_pattel" data-floss="168" id="168" data-type="light" data-colorcode="#D1D1D1" style="background-color:#D1D1D1"> </li>
+                              <li class="color_pattel" data-floss="169" id="169" data-type="light" data-colorcode="#848484" style="background-color:#848484"> </li>
+                              <li class="color_pattel" data-floss="208" id="208" data-type="dark" data-colorcode="#835B8B" style="background-color:#835B8B"> </li>
+                              <li class="color_pattel" data-floss="209" id="209" data-type="dark" data-colorcode="#A37BA7" style="background-color:#A37BA7"> </li>
+                            </ul>
                         </div>
 
                         <p class="font-weight-bold text-left">
@@ -324,6 +589,29 @@ $( window ).on( "load", function() {
                           <button class="btn btn-success show-text-colors-btn" data-toggle="collapse" data-target="#text_pattel_container"> + </button>
                         </p>
                         <div class="text_color_pattel_container collapse text-left" id="text_pattel_container">
+                            <ul class="text-color-list">
+                                  <li class="text_color_pattel" data-floss="150" id="150" data-type="dark" data-colorcode="#AB0249" style="background-color:#AB0249">
+                                  </li>
+                                  <li class="text_color_pattel" data-floss="151" id="151" data-type="light" data-colorcode="#F0CED4" style="background-color:#F0CED4"> </li>
+                                  <li class="text_color_pattel" data-floss="152" id="152" data-type="light" data-colorcode="#E2A099" style="background-color:#E2A099"> </li>
+                                  <li class="text_color_pattel" data-floss="153" id="153" data-type="light" data-colorcode="#E6CCD9" style="background-color:#E6CCD9"> </li>
+                                  <li class="text_color_pattel" data-floss="154" id="154" data-type="dark" data-colorcode="#572433" style="background-color:#572433"> </li>
+                                  <li class="text_color_pattel" data-floss="155" id="155" data-type="dark" data-colorcode="#9891B6" style="background-color:#9891B6"> </li>
+                                  <li class="text_color_pattel" data-floss="156" id="156" data-type="light" data-colorcode="#A3AED1" style="background-color:#A3AED1"> </li>
+                                  <li class="text_color_pattel" data-floss="157" id="157" data-type="light" data-colorcode="#BBC3D9" style="background-color:#BBC3D9"> </li>
+                                  <li class="text_color_pattel" data-floss="158" id="158" data-type="dark" data-colorcode="#4C526E" style="background-color:#4C526E"> </li>
+                                  <li class="text_color_pattel" data-floss="159" id="159" data-type="light" data-colorcode="#C7CAD7" style="background-color:#C7CAD7"> </li>
+                                  <li class="text_color_pattel" data-floss="160" id="160" data-type="light" data-colorcode="#999FB7" style="background-color:#999FB7"> </li>
+                                  <li class="text_color_pattel" data-floss="161" id="161" data-type="dark" data-colorcode="#7880A4" style="background-color:#7880A4"> </li>
+                                  <li class="text_color_pattel" data-floss="162" id="162" data-type="light" data-colorcode="#DBECF5" style="background-color:#DBECF5"> </li>
+                                  <li class="text_color_pattel" data-floss="163" id="163" data-type="dark" data-colorcode="#4D8361" style="background-color:#4D8361"> </li>
+                                  <li class="text_color_pattel" data-floss="164" id="164" data-type="light" data-colorcode="#C8D8B8" style="background-color:#C8D8B8"> </li>
+                                  <li class="text_color_pattel" data-floss="165" id="165" data-type="light" data-colorcode="#EFF4A4" style="background-color:#EFF4A4"> </li>
+                                  <li class="text_color_pattel" data-floss="166" id="166" data-type="light" data-colorcode="#C0C840" style="background-color:#C0C840"> </li>
+                                  <li class="text_color_pattel" data-floss="167" id="167" data-type="dark" data-colorcode="#A77C49" style="background-color:#A77C49"> </li>
+                                  <li class="text_color_pattel" data-floss="168" id="168" data-type="light" data-colorcode="#D1D1D1" style="background-color:#D1D1D1"> </li>
+                                  <li class="text_color_pattel" data-floss="169" id="169" data-type="light" data-colorcode="#848484" style="background-color:#848484"> </li>
+                                </ul>
                         </div>
 
                         <!-- <p>Grid Width: <input type="text" id="grid_width" value="20" onkeyup="grid_width_change()"></p>

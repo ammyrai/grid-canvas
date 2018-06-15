@@ -1,0 +1,212 @@
+<script src="https://ajax.googleapis.com/ajax/libs/jquery/2.1.1/jquery.min.js"></script>
+
+<script src="https://cdn.rawgit.com/konvajs/konva/1.6.5/konva.min.js"></script>
+<div>
+  <button id='circle' class='addShape'>Add circle</button>
+  <button id='reset'>Reset</button>
+</div>
+
+<div id='container' class='container'></div>
+<div id='container2' class='container'></div>
+
+<p>
+  <span id='text'>Issue: Shadowing effect.</span>
+</p>
+
+<div style='display: none;'>
+<img />
+</div>
+<style>
+p
+{
+  padding: 5px;
+
+}
+.container
+{display: inline-block;
+width: 250px;
+height: 300px;
+background-color: transparent;
+overflow: scroll;
+border: 1px solid red;
+}
+</style>
+<script>
+// add a stage
+var s1 = new Konva.Stage({container: 'container', width: 800, height: 600});
+var s2 = new Konva.Stage({container: 'container2', width: 800, height: 600});
+
+// Add a layer and group to draw on
+var l1 = new Konva.Layer({});
+s1.add(l1);
+var g1 = null;
+
+// Add a display layer and group to draw on - only used to visualise what is going on
+var l2 = new Konva.Layer({});
+s2.add(l2);
+var g2 = new Konva.Group({});
+
+// this function is called from the buttons to throw some interesting shapes onto the canvas for tracing
+var makeShape  = function(opts){
+  //  console.log(opts)
+    var x = opts.x + opts.w;
+    var y = opts.y + opts.w;
+
+    // if the main group is not defined do it now.
+    if (!g1){
+      g1 = new Konva.Group({x: opts.x, y: opts.y, width: opts.w, height: opts.w});
+      l1.add(g1);
+    }
+
+          var c=new Konva.Circle({
+              x: opts.x + opts.w, y: opts.y + opts.w,
+              radius: opts.w/2,
+              fill: 'white',
+              stroke: 'black',
+              strokeWidth: 4,
+              listening: true
+          });
+          g1.add(c);
+
+    l1.draw();
+    // and lets draw it all
+    s1.draw()
+}
+
+// This is what this is all about !
+function scanForEdges(){
+
+  // get the imageData
+  var c = l1.getCanvas();
+  var ctx = c.getContext();
+  // Now we have the inageData - this is a one-D array with a four-step sequence
+  // where 1=R, 2=G, 3=B and 4=A. So positions 1-4 give RBBA values of pixel 1.
+  // A lot of examples walk the entire array to flip colours, but we need to walk
+  // a line-scan to find the outer edge of the shape by looking for any of the A
+  // values not being zero. This is because A=0 is invisible
+  // and all other values ARE a visible pixel. We only need to scan left to right
+  // until the first hit, then right to left the same, then the top & bottom scans. As
+  // long as the rect we select is not overly gappy around the shape then it
+  // 'should' be quick.
+
+  // Get the width and height of the box to scan,
+  var gsz = g1.getClientRect();
+  var x = 0, y = 0, w = gsz.x + gsz.width, h = gsz.y + gsz.height;
+
+  // get the pixel data for that box
+  var imgData = ctx.getImageData(x, y, w, h);
+  var data = imgData.data;
+
+ // console.log('h=' + h + ' w=' + w + ' data len=' + data.length);
+
+  var pxWidth = w * 4, xStep = 1, yStep = 1; // steps > 1, like 3 or 7 can speed up the scan but they can miss edges of squares.
+
+    // you can set these false to see the effect of each scan - all true for live.
+  var doWEScan = true, doEWScan = true, doNSScan = true, doSNScan = true;
+  var plotRects = []; // this is where we collect the boundary points
+
+  if (doWEScan){
+    // walk the Alpha pixels West to East.
+    for (var y = 0; y < h; y = y + yStep){
+      for (var x = 0; x < w; x = x  + xStep){
+        pxNo = (y * pxWidth) + (x * 4)
+        if ( data[pxNo + 3] > 0){
+          xStep1 = xStep
+          plotRects.push({x:x, y: y, w: 4, h:4, pxNo: pxNo});
+          break;
+        }
+      }
+    }
+  }
+
+
+  if (doEWScan){
+  // walk the Alpha pixels East to West.
+    for (var y = 0; y < h; y = y + yStep){
+      for (var x = w; x >=0; x = x  - xStep){
+        pxNo = (y * pxWidth) + (x * 4)
+        if ( data[pxNo + 3] > 0){
+          plotRects.push({x: x, y: y, w: 4, h:4, pxNo: pxNo});
+          break;
+        }
+      }
+    }
+  }
+
+  if (doNSScan){
+    // walk the pixels N to S.
+    for (var x = 0; x < w; x = x  + xStep){
+      for (var y = 0; y < h; y = y + yStep){
+        pxNo = (y * pxWidth) + (x * 4)
+        if ( data[pxNo + 3] > 0){
+          plotRects.push({x: x, y: y, w: 4, h:4, pxNo: pxNo});
+          break;
+        }
+      }
+    }
+  }
+
+
+  if (doSNScan){
+    // walk the pixels S to N.
+    for (var x = 0; x < w; x = x  + xStep){
+      for (var y = h; y >= 0; y = y - yStep){
+        pxNo = (y * pxWidth) + (x * 4)
+        if ( data[pxNo + 3] > 0){
+          plotRects.push({x: x, y: y, w: 4, h:4, pxNo: pxNo});
+          break;
+        }
+      }
+    }
+  }
+
+  // So now we have the results stored in plotRects[] - we are going to visualise then on another canvas
+  // but in live use you would use this array for hit-detection processing.
+  // clear the visualisation group & layer
+  // Addrect just...adds rects !
+var addRect = function(x,y,w,h){
+  w=1;h=1;
+  var r = new Konva.Rect({
+    x: x, y:y, width: w, height: h, strokeWidth:0.1, stroke: 'red', fill: 'red',draggable: true
+  });
+  l1.add(g1)
+  g1.add(r);
+}
+
+var c2 = l1.getCanvas();
+var ctx2 = c2.getContext();
+ctx2.putImageData(imgData, 0, 0);
+ctx2.drawImage(c2._canvas, 0, 0);
+
+for (var i = 0; i < plotRects.length; i = i + 1){
+  var r = plotRects[i];
+  addRect(r.x, r.y, r.w, r.h)
+}
+l1.draw();
+
+//console.log('Done - calculated ' + plotRects.length + ' pts')
+
+
+}
+
+// Events for the buttons
+$('.addShape').click(function(e){
+
+  var type = $(this).prop('id');
+
+  makeShape({w:120, x: 4, y: 4, type: type});
+
+  scanForEdges();
+
+})
+
+$('#reset').click(function(e){
+  g1.destroyChildren();
+  g1.destroy()
+  g1=null;
+  l1.clear();
+  s1.clear();
+})
+
+
+  </script>

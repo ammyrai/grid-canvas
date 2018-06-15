@@ -1,0 +1,198 @@
+<script src="https://ajax.googleapis.com/ajax/libs/jquery/2.1.1/jquery.min.js"></script>
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/4.7.0/css/font-awesome.min.css">
+<script src="https://cdn.rawgit.com/konvajs/konva/1.6.5/konva.min.js"></script>
+<p>
+  <span id='text'>How crop rect relates to original image. First image is the Konva stage, second is the original image. Use click and drag to draw successive rects on the Konva image.</span> <a id='reset'>Reset</a>
+</p>
+
+<div id='container' class='container'></div>
+<div id='container2' class='container'>
+  <img id='daImg' />
+
+  <div class='imgRect'></div>
+  <div id='imgPtr'></div>
+</div>
+<script>
+// Useful frequently used variables.
+var sX = 0, sY = 0, sW = 400, sH = 200; // drawing dimensions
+var iW = 0, iH = 0; // image dimensions
+var cropRect = {x: sX, y: sY, width: iW, height: iH}; // scaled rect
+var imgRect = $('.imgRect');
+var imgPtr = $('#imgPtr');
+var scale = 1;
+var img = $('#daImg');
+var src = "https://dummyimage.com/400x200/e85de8/fff&text=SO Rocks!"
+$('.container').css({width: sW, height: sH});
+
+// Vars for mouse rect work.
+var posStart, posNow, mode = '';
+
+// Set up add a stage & layer
+var s1 = new Konva.Stage({container: 'container', width: sW, height: sH});
+var l1 = new Konva.Layer({});
+s1.add(l1);
+var image = new Konva.Image({})  // prepare an image to display the picture.
+l1.add(image);
+
+// I use a foreground rect to catch events - this covers the konva image completely - you can wire your events in your own way
+var r1 = new Konva.Rect({x: 0, y: 0, width: sW, height: sH, fill: 'gold', opacity: 0 })
+l1.add(r1)
+
+// draw a rectangle to be used as the rubber-band area
+var r2 = new Konva.Rect({x: 0, y: 0, width: 0, height: 0, stroke: 'red', dash: [2,2]})
+r2.listening(false); // stop r2 catching our mouse events otherwise if we reverse mouse direction events may not fire
+l1.add(r2)
+
+// Mouse movement funcs
+function startDrag(posIn){
+  posStart = {x: posIn.x, y: posIn.y};
+  posNow = {x: posIn.x, y: posIn.y};
+}
+
+// update rubber rect position
+function updateDrag(posIn){
+  posNow = {x: posIn.x, y: posIn.y};
+  var posRect = reverse(posStart,posNow);
+  r2.x(posRect.x1);
+  r2.y(posRect.y1);
+  r2.width(posRect.x2 - posRect.x1);
+  r2.height(posRect.y2 - posRect.y1);
+  r2.visible(true);
+  s1.draw(); // redraw any changes.
+}
+
+// start the rubber rect drawing on mouse down.
+r1.on('mousedown', function(e){
+  mode = 'drawing';
+  startDrag({x: e.evt.layerX, y: e.evt.layerY})
+  })
+
+// update the rubber rect on mouse move - note use of 'mode' var to avoid drawing after mouse released.
+r1.on('mousemove', function(e){
+    if (mode === 'drawing'){
+      updateDrag({x: e.evt.layerX, y: e.evt.layerY})
+    }
+})
+
+// When user releases the mouse we note the size and modify the clip rect.
+r1.on('mouseup', function(e){
+    mode = '';
+    r2.visible(false);
+
+	// leave a rect to show the target
+    imgRect.hide();
+
+    setCrop(r2);
+})
+
+// Set the new crop rect, taking account of previous crops
+function setCrop(r){
+
+  image.cropX(r.x() + cropRect.x);
+  image.cropY(r.y()  + cropRect.y);
+  image.cropWidth(r.width() * scale);
+  image.cropHeight(r.height() * scale);
+
+  image.width(r.width());
+  image.height(r.height());
+  l1.draw();
+  cropRect = {x: cropRect.x + r.x(), y: cropRect.y + r.y(), width: r.width(), height: r.height(),draggable: true};
+}
+
+
+// This event listener is fired when the image is loaded - could be a few secs delay for a big image
+// so this is effectively an async technique.
+img.on('load', function() {
+  // note the dimensions
+  iW = img.width();
+  iH = img.height();
+
+  // set the konva image details
+  image.x(sX);
+  image.y(sY);
+  image.width(iW);
+  image.height(iH);
+  image.image(img[0]);
+  l1.draw(); // redraw the layer to see what happened
+});
+
+// This innocent looking line intiates the image load and ultimately fires the event above.
+img.prop('src', src);
+
+// This is just to reverse co-ords if user drags left / up
+function reverse(r1, r2){
+  var r1x = r1.x, r1y = r1.y, r2x = r2.x,  r2y = r2.y, d;
+  if (r1x > r2x ){
+    d = Math.abs(r1x - r2x);
+    r1x = r2x; r2x = r1x + d;
+  }
+  if (r1y > r2y ){
+    d = Math.abs(r1y - r2y);
+    r1y = r2y; r2y = r1y + d;
+  }
+    return ({x1: r1x, y1: r1y, x2: r2x, y2: r2y}); // return the corrected rect.
+}
+
+
+// reset function
+function reset(){
+  sX = 0; sY = 0; sW = 400; sH = 300; // drawing dimensions
+  iW = 0; iH = 0; // image dimensions
+  iW = img.width();
+  iH = img.height();
+  cropRect = {x: sX, y: sY, width: iW, height: iH}; // scaled rect
+  scale = 1;
+  if (image){
+    console.log('iH=' +iH);
+
+    image.x(sX);
+    image.y(sY);
+    image.width(iW);
+    image.height(iH);
+    image.cropX(sX);
+    image.cropY(sY);
+    image.cropWidth(iW);
+    image.cropHeight(iH);
+  }
+  $('.deleteMe').remove();
+  $('.imgRect').hide();
+  l1.draw();
+}
+$('#reset').on('click', function(){reset()});
+
+</script>
+
+<style>
+p
+{
+  padding: 5px;
+
+}
+.container {
+  position: relative;
+  display: inline-block;
+  width: 500px;
+  height: 400px;
+  background-color: transparent;
+  overflow: hidden;
+  border: 1px solid silver;
+}
+.imgRect {
+  position: absolute;
+  border: 1px dotted red;
+  background-color: Aqua;
+  opacity: 0.3;
+}
+#imgPtr {
+  position: absolute;
+  background-color: red;
+  width: 1px;
+  height: 1px;
+  border-radius: 50%;
+  border: 2px solid red;
+}
+a {
+  color: red;
+  cursor: pointer;
+}
+</style>
