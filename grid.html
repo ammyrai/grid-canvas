@@ -171,6 +171,7 @@ gridRectGroup.add(r2);
 var selected_rect = [];
 
 var points =[];
+var test =[];
 /*    Fill Grid cell   */
 canvasGridLayer.on('mousedown', function(evt)
 {
@@ -229,6 +230,7 @@ canvasGridLayer.on('mousedown', function(evt)
                drawLine : true,
            });
            gridRectGroup.add(line);
+
            canvasGridLayer.draw();
            box.attrs.lineDraw = true;
        break;
@@ -347,9 +349,34 @@ canvasGridLayer.on('mousemove', function(evt) {
         line[line.length-1].attrs.drawLine = true;
         if(line[line.length-1].attrs.drawLine === true)
         {
-            var secondX = nearest(evt.evt.layerX,box.attrs.x,box.attrs.x + gridSize);
-            var secondY = nearest(evt.evt.layerY,box.attrs.y,box.attrs.y + gridSize);
-            points.push(secondX,secondY);
+            // var secondX = nearest(box.attrs.x,evt.evt.layerX,box.attrs.x + gridSize);
+            // var secondY = nearest(box.attrs.y,evt.evt.layerY,box.attrs.y + gridSize);
+
+
+
+            var secondX = nearest(evt.evt.layerX,box.attrs.x,box.attrs.x+gridSize);
+            var secondY = nearest(evt.evt.layerY,box.attrs.y,box.attrs.y+gridSize);
+
+
+            var testX = nearest(box.attrs.x,evt.evt.layerX,box.attrs.x+gridSize);
+            var testY = nearest(box.attrs.y,evt.evt.layerY,box.attrs.y+gridSize);
+
+
+            if ( ((secondX - evt.evt.layerX) < 6) && ((secondX - evt.evt.layerX) > 0)) {
+              console.log(secondX, testX, 'points')
+              points.push(secondX,secondY);
+            }
+            else if(((secondY - evt.evt.layerY) < 6) && ((secondY - evt.evt.layerY) > 0)){
+              points.push(secondX,secondY);
+            }
+
+            test.push(testX,testY)
+
+            //console.log("evt.evt.layerX",evt.evt.layerX)
+            //console.log("evt.evt.layerY",evt.evt.layerY)
+
+            console.log("points",points)
+            console.log("test",test)
             line[line.length-1].points(points);
             canvasGridLayer.draw();
             line[line.length-1].attrs.drawLine = true;
