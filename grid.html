@@ -1,8 +1,10 @@
 <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.7/css/bootstrap.min.css">
         <link href="https://maxcdn.bootstrapcdn.com/font-awesome/4.4.0/css/font-awesome.min.css" rel="stylesheet">
+        <link href="https://cdnjs.cloudflare.com/ajax/libs/jqueryui/1.12.1/jquery-ui.min.css" rel="stylesheet">
 <script src="https://cdn.rawgit.com/konvajs/konva/2.1.3/konva.min.js"></script>
  <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.3.1/jquery.min.js"></script>
  <script src="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.7/js/bootstrap.min.js"></script>
+ <script src="https://cdnjs.cloudflare.com/ajax/libs/jqueryui/1.12.1/jquery-ui.min.js"></script>
  <style>
      /*  Color Pattel style  */
 ul.my-new-list, ul.text-color-list {
@@ -171,7 +173,7 @@ gridRectGroup.add(r2);
 var selected_rect = [];
 
 var points =[];
-var test =[];
+// var test =[];
 /*    Fill Grid cell   */
 canvasGridLayer.on('mousedown', function(evt)
 {
@@ -358,25 +360,19 @@ canvasGridLayer.on('mousemove', function(evt) {
             var secondY = nearest(evt.evt.layerY,box.attrs.y,box.attrs.y+gridSize);
 
 
-            var testX = nearest(box.attrs.x,evt.evt.layerX,box.attrs.x+gridSize);
-            var testY = nearest(box.attrs.y,evt.evt.layerY,box.attrs.y+gridSize);
+            // var testX = nearest(box.attrs.x,evt.evt.layerX,box.attrs.x+gridSize);
+            // var testY = nearest(box.attrs.y,evt.evt.layerY,box.attrs.y+gridSize);
 
 
             if ( ((secondX - evt.evt.layerX) < 6) && ((secondX - evt.evt.layerX) > 0)) {
-              console.log(secondX, testX, 'points')
               points.push(secondX,secondY);
             }
             else if(((secondY - evt.evt.layerY) < 6) && ((secondY - evt.evt.layerY) > 0)){
               points.push(secondX,secondY);
             }
 
-            test.push(testX,testY)
+            // test.push(testX,testY)
 
-            //console.log("evt.evt.layerX",evt.evt.layerX)
-            //console.log("evt.evt.layerY",evt.evt.layerY)
-
-            console.log("points",points)
-            console.log("test",test)
             line[line.length-1].points(points);
             canvasGridLayer.draw();
             line[line.length-1].attrs.drawLine = true;
@@ -391,13 +387,6 @@ canvasGridLayer.on('mousemove', function(evt) {
     }
   }
 });
-//
-// function containsAll(needles, haystack){
-//   for(var i = 0 , len = needles.length; i < len; i++){
-//      if($.inArray(needles[i], haystack) == -1) return false;
-//   }
-//   return true;
-// }
 /*  Code for the select and drag designs starts here!  */
 gridcloneGroup.on('dragstart', function(e) {
     r2.visible(false);
@@ -547,6 +536,69 @@ function ColorLuminance(hex, lum)
 /*  Generate new color codes script ends here!  */
 });
 
+
+
+$(document).ready(function() {
+
+    $("#textModal").draggable({
+    handle: ".modal-header"
+    });
+    var sampleGridSize = 20;
+
+    /*  create stage for main canvas  */
+    var sampleStage = new Konva.Stage({
+        container: 'text_container',                  // Canvas container
+        width: canvasWidth * sampleGridSize,        // Canvas Width
+        height: canvasHeight * sampleGridSize
+    });
+
+    /*  Create Multiple Layers for stage  */
+
+    var sampleGridLayer = new Konva.Layer();         //  a Layer2 for canvas Grid
+
+    /*  Layers creation ends here! */
+
+    /*  Create new group  */
+    var samplegridRectGroup = new Konva.Group();
+
+
+    var complexText = new Konva.Text({
+      x: 20,
+      y: 60,
+      text: 'COMPLEX TEXT All the world',
+      fontSize: 18,
+      fontFamily: 'Calibri',
+      fill: '#555',
+      width: 300,
+      padding: 20,
+      align: 'center'
+    });
+
+    for (var ix = 0; ix < canvasWidth; ix++) {
+        for (var iy = 0; iy < canvasHeight; iy++) {
+          sampleGrid = new Konva.Rect({
+            x : ix * sampleGridSize,
+            y : iy * sampleGridSize,
+            width : sampleGridSize ,
+            height: complexText.getHeight(),
+            stroke: 'red',
+          });
+          samplegridRectGroup.add(sampleGrid);                   // Add rectangle to group
+        }
+      }
+
+
+
+      samplegridRectGroup.add(complexText);
+
+      sampleGridLayer.add(samplegridRectGroup);   // Add Groups to layer
+      sampleStage.add(sampleGridLayer);          // Add Layer to stage
+
+});
+
+
+
+
      </script>
 <div class="col-md-12 canvas_container">
                     <div class="col-md-6 float-left canvas_content">
@@ -567,7 +619,7 @@ function ColorLuminance(hex, lum)
                             <li class="canvas_tool" id="back_stich" data-mode="back_stich" title="Back Stich">
                               <img src="back_stich.png" alt="Back Stich" width='54px' height='41px' />
                             </li>
-                            <li class="canvas_tool" id="" data-mode="text" title="Text">
+                            <li class="canvas_tool" id="text_modal" data-mode="text" title="Text" data-toggle="modal" data-target="#textModal" data-backdrop="false" >
                                 <i class="fa fa-text-width" aria-hidden="true"></i>
                             </li>
                             <li class="canvas_tool" id="refresh_canvas" data-mode="refresh" title="Refresh">
@@ -644,3 +696,76 @@ function ColorLuminance(hex, lum)
                     </div> -->
                 </div>
             </div>
+
+            <!-- Modal -->
+            <div id="textModal" class="modal fade">
+                <div class="modal-dialog">
+                    <div class="col-md-12 modal-content">
+                        <div class="modal-header">
+                            <button type="button" class="close" data-dismiss="modal" aria-hidden="true">&times;</button>
+                             <h4 class="modal-title">Draw Text</h4>
+
+                        </div>
+                        <div class="modal-body">
+                          <form class="form-horizontal">
+                          <div class="form-group">
+                                <label class="control-label col-sm-2" for="email">Text</label>
+                                <div class="col-sm-10">
+                                  <input type="text" class="form-control" id="text">
+                                </div>
+                              </div>
+                              <div class="form-group">
+                                <label class="control-label col-sm-2" for="pwd">Font:</label>
+                                <div class="col-sm-10">
+                                  <select name='font'>
+                                    <option></option>
+                                  </select>
+                                </div>
+                              </div>
+                              <div class="form-group">
+                                <label class="control-label col-sm-2" for="pwd">Size:</label>
+                                <div class="col-sm-10">
+                                  <input type="number" class="form-control" id="number" value="12">
+                                </div>
+                              </div>
+                              <div class="form-group">
+                                <label class="control-label col-sm-2" for="pwd">Bold:</label>
+                                <div class="col-sm-10">
+                                  <input type="checkbox" name='bold'/>
+                                </div>
+                              </div>
+                              <div class="form-group">
+                                <label class="control-label col-sm-2" for="pwd">Italic:</label>
+                                <div class="col-sm-10">
+                                  <input type="checkbox" name='italic'/>
+                                </div>
+                              </div>
+                              <div class="form-group">
+                                <label class="control-label col-sm-2" for="pwd">Weight:</label>
+                                <div class="col-sm-10">
+                                  <select name="weight">
+                                    <option value="light"> Light</option>
+                                    <option value="lighter"> Lighter</option>
+                                    <option value="light"> Dark</option>
+                                    <option value="light"> Darker</option>
+                                  </select>
+                                </div>
+                              </div>
+                              <div class="form-group">
+                                <label class="control-label col-sm-2" for="pwd">Sample:</label>
+                                <div class="col-sm-10">
+                                  <div id="text_container"></div>
+                                </div>
+                              </div>
+
+                            </form>
+                        </div>
+                        <div class="modal-footer">
+                            <button id="loadpage" type="button" class="btn btn-primary">Ok</button>
+                        </div>
+                    </div>
+                    <!-- /.modal-content -->
+                </div>
+                <!-- /.modal-dialog -->
+            </div>
+            <!-- /.modal -->
