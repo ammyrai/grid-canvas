@@ -428,17 +428,6 @@ function updateDrag(posIn,updateSelect){
 /*  Code for the select and drag designs ends here! */
 
 
-$("#cloneSampleText").click(function(){
-  alert(stage)
-  var c = document.getElementById("textSample");
-  var r = c.getContext("2d");
-  var imgdata = r.getImageData(0, 0, c.width, c.height);
-
-  var r1 = canvas.getContext("2d");
-  r1.putImageData(imgdata, 0, 0);
-})
-
-
 
 
 /*  Layer2 Create a grid on canvas work ends here!*/
@@ -594,12 +583,39 @@ output.innerHTML = slider.value;
       updateSample($("#textfill").val(),$('#textFontSelect').val(),$('#textFontsize').val(),$("#textFontBold").prop("checked"), $("#textFontItalic").prop("checked"),this.value)
     }
 
+    var width = 700;
+    var height = 200;
+
+    // CREATE KONVE STAGE AND LAYER
+    var stage1 = new Konva.Stage({
+     container: 'textSample',
+     width: width,
+     height: height
+    });
+
+    var layer1 = new Konva.Layer();
+    stage1.add(layer1);
+    var newGrup = new Konva.Group();
+    // this.tooWide.toggleClass("hideMe", TextUtil.textWidth <= designGrid.width());
+    var c = document.createElement('canvas');
+    c.width = stage1.width()/2;
+    c.height = stage1.height()/2;
+
+
+    // created canvas is added to layer as a "Konva.Image" element
+    var image = new Konva.Image({
+        image: c,
+        x : stage1.width()/8,
+        y : stage1.height()/8,
+        stroke: 'grey',
+    });
+
+    newGrup.add(image);
+    layer1.add(newGrup);
+    var r = c.getContext("2d");
 
     function updateSample(textpara,fontfamily,textsize,bold,italic,weight) {
         var f = text(textpara,fontfamily,textsize,bold,italic,weight)
-        // this.tooWide.toggleClass("hideMe", TextUtil.textWidth <= designGrid.width());
-        var c = document.getElementById("textSample");
-        var r = c.getContext("2d");
         r.clearRect(0, 0, c.width, c.height);
         var q =6;
         if (q >= 10) {
@@ -623,6 +639,9 @@ output.innerHTML = slider.value;
                 r.fillRect(b + n * g + k, a + l * q, g, q)
             }
         }
+        layer1.draw();
+        stage1.draw();
+        document.body.appendChild(c)
     }
     function applyDeselRatio(b) {
     var deselRatio = 1;
@@ -705,6 +724,29 @@ output.innerHTML = slider.value;
         }
         return a
     }
+
+    $("#cloneSampleText").click(function(){
+      console.log('text')
+      var aa = newGrup.clone({x:20,y:20,draggable:true,name:'clonedGruop'});
+      aa.off('dragstart');
+      canvasGridLayer.add(aa);
+      canvasGridLayer.draw();
+
+      $('.close').click();
+      console.log(aa);
+    })
+    newGrup.on('dragstart', function(e) {
+      consolr.log('drag start')
+       // r2.visible(false);
+    });
+    newGrup.on('dragend', function() {
+      newGrup.position({
+        x: Math.round(newGrup.x() / gridSize) * gridSize,
+        y: Math.round(newGrup.y() / gridSize) * gridSize
+      });
+      stage1.batchDraw();
+      newGrup.draggable(false)
+    });
 });
 </script>
 <style>
@@ -753,7 +795,7 @@ output.innerHTML = slider.value;
                     <div class="col-md-2">
                         <h3>Toolbar Section</h3>
                         <ul class="toolbar_list" id="">
-                            <!-- <li class="canvas_tool active" id="pencil" data-mode="pencil" title="pencil">
+                            <li class="canvas_tool active" id="pencil" data-mode="pencil" title="pencil">
                                 <i class="fa fa-pencil" aria-hidden="true"></i>
                             </li>
                             <li class="canvas_tool" id="eraser" data-mode="eraser" title="eraser">
@@ -764,7 +806,7 @@ output.innerHTML = slider.value;
                             </li>
                             <li class="canvas_tool" id="back_stich" data-mode="back_stich" title="Back Stich">
                               <img src="back_stich.png" alt="Back Stich" width='54px' height='41px' />
-                            </li> -->
+                            </li>
                             <li class="canvas_tool" id="text_modal" data-mode="text" title="Text" data-toggle="modal" data-target="#textModal" data-backdrop="false" >
                                 <i class="fa fa-text-width" aria-hidden="true"></i>
                             </li>
@@ -937,7 +979,7 @@ output.innerHTML = slider.value;
                               <div class="form-group">
                                 <label class="control-label col-sm-2" for="pwd">Sample:</label>
                                 <div class="col-sm-10">
-                                  <canvas id="textSample" width="300" height="100" style="border:1px solid gray;  "></canvas>
+                                  <div id="textSample"></div>
                                 </div>
                               </div>
 
