@@ -1,0 +1,151 @@
+<link rel='stylesheet'href='style.css' type='text/css' />
+<script type='text/javascript' src='https://ajax.googleapis.com/ajax/libs/jquery/1.7.1/jquery.min.js'></script>
+<script src='partengrid.js'></script>
+<div id="patternGridTool">
+	<div id="designGrid">
+		<img id="designGridTracingImage" src="" class="canvasStack">
+		<img id="designGridTracingImageBlank" src="blank.png" class="canvasStack" width="600" height="600">
+				<canvas id="designGridTracingCanvas" class="canvasStack" width="600" height="600"></canvas>
+		<canvas id="designGridCanvas" class="canvasStack" width="600" height="600">Oh dear! It looks like your browser doesn't support Pattern Grid, sorry. If possible, use this from an up-to-date, fully-featured browser. </canvas>
+		<canvas id="designGridToolCanvas" class="canvasStack" width="600" height="600"></canvas>
+		<canvas id="designGridImageCanvas" class="canvasStack" width="600" height="600"></canvas>
+	</div>
+
+	<div id="mainToolbox" class="toolbox" defaulttool="toolPen">
+		<button type="button" class="toolButton imageToolButton" id="toolPen" title="pen">
+			<div class="sprite sprite_pen"></div>
+		</button>
+		<button type="button" class="toolButton imageToolButton" id="toolLine" title="line">
+			<div class="sprite sprite_line"></div>
+		</button>
+		<button type="button" class="toolButton imageToolButton" id="toolSelect" title="select">
+			<div class="sprite sprite_select"></div>
+		</button>
+		<button type="button" class="toolButton imageToolButton" id="toolErase" title="erase">
+			<div class="sprite sprite_eraser"></div>
+		</button>
+		<button type="button" class="toolButton imageToolButton" id="toolPickColour" title="pattern color picker">
+			<div class="sprite sprite_colourPicker"></div>
+		</button>
+		<button type="button" class="toolButton imageToolButton" id="toolFill" title="fill">
+			<div class="sprite sprite_fill"></div>
+		</button>
+		<button type="button" class="toolButton imageToolButton" id="toolRectOutline" title="rectangle outline">
+			<div class="sprite sprite_recto"></div>
+		</button>
+		<button type="button" class="toolButton imageToolButton" id="toolRectSolid" title="solid rectange">
+			<div class="sprite sprite_rects"></div>
+		</button>
+		<button type="button" class="toolButton imageToolButton" id="toolEllipseOutline" title="ellipse outline">
+			<div class="sprite sprite_ellipseo"></div>
+		</button>
+		<button type="button" class="toolButton imageToolButton" id="toolEllipseSolid" title="solid ellipse">
+			<div class="sprite sprite_ellipses"></div>
+		</button>
+		<button type="button" class="toolButton imageToolButton currentTool" id="toolText" title="text">
+			<div class="sprite sprite_text"></div>
+		</button>
+		<button type="button" class="toolButton imageToolButton" id="toolBackstitch" title="backstitch">
+			<div class="sprite sprite_backstitch"></div>
+		</button>
+		<button type="button" class="toolButton" id="toolScroll" title="scroll">
+			<div class="sprite sprite_scroll"></div>
+		</button>
+		<button type="button" class="toolButton smallImageToolButton" id="toolZoomIn" title="zoom in">
+			<div class="sprite sprite_zoomIn"></div>
+		</button>
+		<button type="button" class="toolButton smallImageToolButton disabledAction" id="toolZoomOut" title="zoom out" disabled="">
+			<div class="sprite sprite_zoomOut"></div>
+		</button>
+		<button type="button" class="toolButton undoButton imageToolButton disabledAction" onclick="undoClicked();" title="undo">
+			<div class="sprite sprite_undo"></div>
+		</button>
+		<button type="button" class="toolButton redoButton imageToolButton disabledAction" onclick="redoClicked();" title="redo">
+			<div class="sprite sprite_redo"></div>
+		</button>
+		<p></p>
+		<button type="button" class="toolButton imageToolButton tracingTool disabledAction" id="toolMagicPen" title="magic pen" disabled="">
+			<div class="sprite sprite_magicPen"></div>
+		</button>
+		<button type="button" class="toolButton imageToolButton tracingTool disabledAction" id="toolMagicBrush" title="magic brush" disabled="">
+			<div class="sprite sprite_magicBrush"></div>
+		</button>
+		<button type="button" class="toolButton imageToolButton tracingTool disabledAction" id="toolTracingPickColour" title="image color picker" disabled="">
+			<div class="sprite sprite_magicPicker"></div>
+		</button>
+		<button type="button" class="toolButton imageToolButton tracingTool disabledAction" id="toolMagicFill" title="magic fill" disabled="">
+			<div class="sprite sprite_magicFill"></div>
+		</button>
+		<div id="imageAlphaSlider" class="toolButton tracingTool disabledAction" onclick="" title="image transparency">
+			<div id="imageAlphaSliderRange">
+				<div class="sprite sprite_alphaBackground"></div>
+				<div class="sprite sprite_alphaThumb" id="imageAlphaSliderThumb"></div>
+			</div>
+		</div>
+		<button type="button" class="toolButton imageToolButton tracingTool disabledAction" id="toolTracingScroll" title="scroll image" disabled="">
+			<div class="sprite sprite_scrollImage"></div>
+		</button>
+		<button type="button" class="toolButton smallImageToolButton tracingTool disabledAction" id="toolTracingZoomIn" title="zoom in image">
+			<div class="sprite sprite_zoomIn"></div>
+		</button>
+		<button type="button" class="toolButton smallImageToolButton tracingTool disabledAction" id="toolTracingZoomOut" title="zoom out image">
+			<div class="sprite sprite_zoomOut"></div>
+		</button>
+		<button type="button" class="toolButton imageToolButton hideMe" id="pgLibraryToolSelect" title="select">
+			<div class="sprite sprite_select"></div>
+		</button>
+	</div>
+
+	<div id="colourPicker">
+		<div id="colourSources">
+						<div class="colourSource" id="farbtasticPicker" object="farbtasticColourSource" name="Full color"><div class="farbtastic"><div class="color" style="background-color: rgb(255, 0, 0);"></div><div class="wheel"></div><div class="overlay"></div><div class="h-marker marker" style="left: 97px; top: 13px;"></div><div class="sl-marker marker" style="left: 47px; top: 97px;"></div></div></div>
+			<div class="colourSource hideMe" id="dmcPalette" object="dmcPaletteColourSource" name="DMC palette (Embr Floss)">
+				<img id="dmcPaletteImage" src="/i/dmcPicker.png" width="194" height="194">
+				<canvas id="dmcPaletteCanvas" width="194" height="194"></canvas>
+			</div>
+			<div class="colourSource hideMe" id="dmcNumber" object="dmcNumberColourSource" name="DMC numbers (Embr. Floss)">
+				DMC code: <input id="dmcNumberInput" type="text" maxlength="5" size="5">
+				<button type="button" id="dmcNumberInputSet" title="Set"><img src="setColour.png"></button><br>
+				<p id="dmcNumberName"></p>
+				<div id="dmcNumberSample"></div>
+			</div>
+			<div class="colourSource hideMe" id="dmcTapestryPalette" object="dmcTapestryPaletteColourSource" name="DMC palette (Tapestry wool)">
+				<img id="dmcTapestryPaletteImage" src="/cdo-apps/colour-picker/i/dmcTapestryPicker.png" width="194" height="194">
+				<canvas id="dmcTapestryPaletteCanvas" width="194" height="194"></canvas>
+			</div>
+			<div class="colourSource hideMe" id="dmcTapestryNumber" object="dmcTapestryNumberColourSource" name="DMC numbers (Tapestry wool)">
+				DMC Tapestry code: <input id="dmcTapestryNumberInput" type="text" maxlength="5" size="5">
+				<button type="button" id="dmcTapestryNumberInputSet" title="Set"><img src="setColour.png"></button><br>
+				<p id="dmcTapestryNumberName"></p>
+				<div id="dmcTapestryNumberSample"></div>
+			</div>
+					</div>
+		<div>
+			<canvas id="paletteCanvas" width="390" height="194"></canvas>
+		</div>
+	</div>
+
+	<!-- <div id="busySpinner" class="hideMe">
+		<img src="/i/ajax-loader.gif">
+	</div> -->
+</div>
+    <div id="textToolPopup" class="pgPopup hideMe" near="toolText" focus="textToolText">
+    	<h1 close="x">Draw text</h1>
+    	<table>
+    	<tbody><tr><td>Text</td><td><input type="text" id="textToolText"></td></tr>
+    	<tr><td>Font</td><td><select id="textToolFontSelect"></select></td></tr>
+    	<tr><td>Size</td><td><input id="textToolFontSize" type="number" min="7" max="99" value="12" maxlength="2" size="2"></td></tr>
+    	<tr><td>Bold</td><td><input id="textToolBold" type="checkbox"><span style="width:30;"> </span></td></tr>
+    	<tr><td>Italic</td><td><input id="textToolItalic" type="checkbox"></td></tr>
+    	<tr><td>Weight</td><td>
+    	<div id="textToolWeightSlider">
+    		<div id="textToolWeightSliderRange">
+    			<div class="sprite sprite_fontWeightRange"></div>
+    			<div class="sprite sprite_fontWeightThumb" style="position: absolute;" id="textToolWeightThumb"></div>
+    		</div>
+    	</div></td></tr>
+    	<tr><td>Sample</td><td><canvas id="textToolSample" width="300" height="100"></canvas></td></tr>
+    	</tbody></table>
+    	<button type="button" id="textToolOk">Ok</button>
+    	<span id="textToolTooWide" class="hideMe" style="color:red;" title="You can change the pattern size in &quot;Grid settings&quot; in the Edit menu.">Text is too wide for pattern</span>
+    </div>
