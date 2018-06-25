@@ -4144,7 +4144,7 @@ var designGrid = {
     BS_FORWARD: 4,
     BS_BACK: 8,
     init: function() {
-      alert('canvas')
+
         DesIO.register("DG", function(a, b) {
             designGrid.fromString(a, b)
         }, function() {
@@ -5874,7 +5874,6 @@ var toolBox = {
         this.toolMagicFill = pgToolMagicFill;
         var a = $(".toolButton");
         a.each(function(c, b) {
-          alert(12)
             if (!b.onclick) {
                 b.onclick = function() {
 
