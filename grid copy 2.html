@@ -51,10 +51,9 @@ ul.toolbar_list li:hover,  ul.toolbar_list li.active{
  <script>
      /*    Konva canvas file   */
 /*    Declare Global Variables    */
-var stageWidth = 800,
-    canvasWidth = 35,                   // Grid Width
-    canvasHeight = 24.5,                  // Grid Height
-    gridSize = stageWidth/canvasWidth,                      // Grid Tile Size
+var gridSize = 25,                      // Grid Tile Size
+    canvasWidth = 20,                   // Grid Width
+    canvasHeight = 20,                  // Grid Height
     box,                                // Variable for rectangle element
     circle,                             // Variable for circle element
     text,                               // Variable for circle element
@@ -69,9 +68,7 @@ var stageWidth = 800,
     gridShadowCPara,                    // Grid Stroke Color code parameter
     circleStrokeCPara,                  // Circle Stroke Color code parameter
     circleFillCPara,                    // Circle Fill Color code parameter
-    cr,
-    json,                               // Json variable for final canvas output
-    txtFillSize = Math.round(gridSize);
+    json;                               // Json variable for final canvas output
 
 /*
       =========================================================
@@ -90,7 +87,7 @@ function canvasInit(canvasMainBgcolor,gridStrokeColor,gridShadowColor,circleStro
 /*  create stage for main canvas  */
 stage = new Konva.Stage({
     container: 'canvas',                  // Canvas container
-    width: stageWidth,        // Canvas Width
+    width: canvasWidth * gridSize,        // Canvas Width
     height: canvasHeight * gridSize       // Canvas Height
 });
 
@@ -99,34 +96,30 @@ stage = new Konva.Stage({
 backgroundCanvas = new Konva.Layer();        // Layer1 for canvas main background
 canvasGridLayer = new Konva.Layer();         //  a Layer2 for canvas Grid
 
-var gridRectGroup = new Konva.Group();
-var gridCircleGroup = new Konva.Group();
-var gridTextGroup = new Konva.Group();
-
 /*  Layers creation ends here! */
 
 /*  Layer1 work starts here! */
 stageRect =  new Konva.Rect({
   x:0,
   y:0,
-  width: stageWidth,
+  width: canvasWidth * gridSize,
   height: canvasHeight * gridSize,
   fill: canvasMainBgcolor,
 })
 backgroundCanvas.add(stageRect);
 /*  Layer1 work ends here! */
-if(Math.round(gridSize) >= 20)
-{
-  cr = 2;
-}
-else if(Math.round(gridSize) >= 10)
-{
-  cr = 1;
-}
-else {
-  cr = 0;
-}
+
 /*  Layer2 Create a grid on canvas work starts here!*/
+
+text = new Konva.Text({
+  text: '',
+  x: '',
+  y: '',
+  fontFamily: 'sans-serif',
+  fontSize: gridSize,
+  fill: textFillColor,
+  fontStyle : 'normal'
+});
 
 for (var ix = 0; ix < canvasWidth; ix++) {
     for (var iy = 0; iy < canvasHeight; iy++) {
@@ -134,7 +127,7 @@ for (var ix = 0; ix < canvasWidth; ix++) {
           x : ix * gridSize,
           y : iy * gridSize,
           width : gridSize ,
-          height: gridSize,
+          height: text.getHeight(),
           stroke: gridStrokeColor,
           strokeWidth: 0,
           lineJoin : 'round',
@@ -147,13 +140,13 @@ for (var ix = 0; ix < canvasWidth; ix++) {
       circle = new Konva.Circle({
         x: box.attrs.x,
         y: box.attrs.y,
-        radius: cr,
+        radius: 2,
         stroke: circleStrokeColor,
         strokeWidth: 1,
       });
-      gridRectGroup.add(box);                   // Add rectangle to group
-      gridCircleGroup.add(circle);             // Add rectangle to background layer
-
+      canvasGridLayer.add(box);              // Add rectangle to background layer
+      canvasGridLayer.add(circle);              // Add rectangle to background layer
+      canvasGridLayer.add(text);
     }
   }
 
@@ -180,34 +173,46 @@ canvasGridLayer.on('mousedown', function(evt)
        if(box.attrs.filled == false)
        {
                box.shadowEnabled(false);
-
-               text = new Konva.Text({
-                text: 'X',
-                 x: box.attrs.x,
-                 y: box.attrs.y,
-                 fontFamily: 'sans-serif',
-                 fontSize: txtFillSize,
-                 fill: textFillColor,
-                 fontStyle : 'normal',
-                 filled : true,
-               });
                box['filled'] = true;
-               box.height = text.getHeight();
-               gridTextGroup.add(text);
-               gridTextGroup.draw();
+               text.text('X');
+               text.x(box.attrs.x);
+               text.y(box.attrs.y);
+               canvasGridLayer.add(text);
+               text.draw();
            }
        break;
        case 'eraser':
-       if(box.attrs.filled == true)
-       {
-          if(evt.target.className == 'Text')
+       // if(box.filled == true)
+       //  {
+          // console.log(box)
+
+           // console.log(Konva.Node.prototype.y.call(box));
+          if(box.filled == true)
           {
-              evt.target.destroy();
-              box.attrs.filled = false;
-              box.shadowEnabled(true);
-          }
-       }
-       canvasGridLayer.batchDraw();
+//            Konva.Node.prototype.remove.call(text);
+//            canvasGridLayer.draw();
+             // box.attrs.text= ' ' ;
+             // box.partialText=' ';
+             // box.textArr=[ ];
+             //
+             // text.attrs.text= ' ' ;
+             // text.partialText=' ';
+             // text.textArr=[ ];
+             // text.draw();
+
+           }
+   //}
+       // box.textArr=[];
+       // console.log(text.getAncestors());
+       // box.getAncestors().each(function(node) {
+       //  console.log(node.getId());
+       //  })
+          //console.log(Konva.Node.prototype)
+           //Konva.Node.prototype.remove.call(text);
+           // box.shadowEnabled(true);
+           // box.shadowColor(gridShadowColor);
+           // box.shadowOffset({ x: 3, y: 3 });
+           // canvasGridLayer.draw();
        break;
        case 'hand':
          console.log('Hand Mode!');
@@ -235,38 +240,98 @@ canvasGridLayer.on('mouseover', function(evt) {
        if(box.attrs.filled == false)
        {
                box.shadowEnabled(false);
-               text = new Konva.Text({
-                text: 'X',
-                 x: box.attrs.x,
-                 y: box.attrs.y,
-                 fontFamily: 'sans-serif',
-                 fontSize: txtFillSize,
-                 fill: textFillColor,
-                 fontStyle : 'normal',
-                 filled : true,
-               });
                box['filled'] = true;
-               box.height = text.getHeight();
-               gridTextGroup.add(text);
-               gridTextGroup.draw();
+               text.text('X');
+               text.x(box.attrs.x);
+               text.y(box.attrs.y);
+               text.name='customText'
+               canvasGridLayer.add(text);
+               text.draw();
             }
        break;
        case 'eraser':
-       if(box.className == 'Rect' && box.attrs.filled == true)
-       {
-          var textList = canvasGridLayer.find("Text");
-          $( textList ).each(function(key, val) {
-             val.on('mouseenter', function(evt) {
-               if(evt.target.className == 'Text')
-               {
-                 evt.target.destroy();
-               }
-             });
-         });
-         box.attrs.filled = false;
-         box.shadowEnabled(true);
-       }
-       canvasGridLayer.batchDraw();
+
+          if(box.filled == true)
+           {
+            // console.log(box)
+
+              // console.log(Konva.Node.prototype.y.call(box));
+             // if(evt.target.className == 'Text')
+             // {
+
+               Konva.Node.prototype.remove.call(text);
+               canvasGridLayer.draw();
+               // box.attrs.text= ' ' ;
+               // box.partialText=' ';
+               // box.textArr=[ ];
+               // box.fill(' ');
+               //
+               // text.fill(' ');
+               // text.attrs.text= ' ' ;
+               // text.partialText=' ';
+               // text.textArr=[ ];
+               // text.index = ' ';
+               // text.textHeight = ' ';
+               // text.textWidth = ' ';
+               // text.draw();
+               // Konva.Node.prototype.remove.call(text);
+               // box = new Konva.Rect({
+               //     x : box.attrs.x,
+               //     y : box.attrs.y,
+               //     width : box.attrs.width ,
+               //     height: box.attrs.height,
+               //     stroke: box.attrs.stroke,
+               //     strokeWidth: box.attrs.strokeWidth,
+               //     lineJoin : box.attrs.lineJoin,
+               //     shadowEnabled : box.attrs.shadowEnabled,
+               //     shadowColor: box.attrs.shadowColor,
+               //     shadowOffset: box.attrs.shadowOffset,
+               //     shadowOpacity: box.attrs.shadowOpacity
+               // });
+               // circle = new Konva.Circle({
+               //   x: box.attrs.x,
+               //   y: box.attrs.y,
+               //   radius: 2,
+               //   stroke: circleStrokeColor,
+               //   strokeWidth: 1,
+               // });
+               // canvasGridLayer.add(box);              // Add rectangle to background layer
+               // canvasGridLayer.add(circle);
+
+               //canvasGridLayer.draw();
+
+
+
+               // var idToRemove =  evt.target["_id"]
+               // if(evt.target.attrs.x === stage.attrs.x && evt.target.attrs.y === stage.attrs.y){
+               //
+               //   //Konva.Node.prototype.remove.call(evt.target);
+               //   //canvasGridLayer.draw();
+               // }
+
+               //console.log(evt);
+               // box.textArr=[]
+               //  box.partialText=''
+               //  box.__proto__.setText('')
+              //  Konva.Node.prototype.remove.call(text.x(box.attrs.x));
+                //canvasGridLayer.draw();
+            // }
+
+
+              //text.remove(index)
+              //Konva.Node.prototype.removeName('text')
+            // box.textArr=[]
+             //box.partialText=''
+             //box.__proto__.setText('')
+             // console.log(evt);
+             // Konva.Node.prototype.remove.call(text);
+             // box['filled'] = false;
+             // box.shadowEnabled(true);
+             // box.shadowColor(gridShadowColor);
+             // box.shadowOffset({  x: 3, y: 3 });
+             //canvasGridLayer.draw();
+           }
+
        break;
        case 'hand':
          console.log('Hand Mode!');
@@ -280,7 +345,7 @@ canvasGridLayer.on('mouseover', function(evt) {
   }
 });
 /*  Layer2 Create a grid on canvas work ends here!*/
-canvasGridLayer.add(gridRectGroup,gridCircleGroup,gridTextGroup);
+
 stage.add(backgroundCanvas,canvasGridLayer);          // Add Layer to stage
 json = stage.toJSON();      // Save entire canvas as json
 //console.log(json);

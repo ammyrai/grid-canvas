@@ -15,6 +15,7 @@
 </head>
 
 <body>
+
   <canvas id="myCanvas" width="550px" height="350px"></canvas>
 
   <script>
@@ -43,6 +44,7 @@
     function setMousePosition(e) {
       mouseX = e.clientX - canvasPos.x;
       mouseY = e.clientY - canvasPos.y;
+
     }
 
     function stopfollow(e)
@@ -53,13 +55,12 @@
     function getPosition(el) {
       var xPosition = 0;
       var yPosition = 0;
-
       while (el) {
-        console.log("el",el)
         xPosition += (el.offsetLeft - el.scrollLeft + el.clientLeft);
         yPosition += (el.offsetTop - el.scrollTop + el.clientTop);
         el = el.offsetParent;
       }
+      console.log("xPosition", xPosition,"yPosition", yPosition)
       return {
         x: xPosition,
         y: yPosition
