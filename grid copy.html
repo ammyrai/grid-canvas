@@ -1,8 +1,10 @@
 <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.7/css/bootstrap.min.css">
         <link href="https://maxcdn.bootstrapcdn.com/font-awesome/4.4.0/css/font-awesome.min.css" rel="stylesheet">
+        <link href="https://cdnjs.cloudflare.com/ajax/libs/jqueryui/1.12.1/jquery-ui.min.css" rel="stylesheet">
 <script src="https://cdn.rawgit.com/konvajs/konva/2.1.3/konva.min.js"></script>
  <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.3.1/jquery.min.js"></script>
- <script src="//maxcdn.bootstrapcdn.com/bootstrap/3.3.7/js/bootstrap.min.js"></script>
+ <script src="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.7/js/bootstrap.min.js"></script>
+ <script src="https://cdnjs.cloudflare.com/ajax/libs/jqueryui/1.12.1/jquery-ui.min.js"></script>
  <style>
      /*  Color Pattel style  */
 
@@ -49,9 +51,10 @@ ul.toolbar_list li:hover,  ul.toolbar_list li.active{
 
  </style>
  <script>
+ $( window ).on( "load", function() {
      /*    Konva canvas file   */
 /*    Declare Global Variables    */
-var stageWidth = 800,
+var stageWidth = 805,
     canvasWidth = 35,                   // Grid Width
     canvasHeight = 24.5,                  // Grid Height
     gridSize = stageWidth/canvasWidth,                      // Grid Tile Size
@@ -85,8 +88,7 @@ var stageWidth = 800,
       =========================================================
 
 */
-function canvasInit(canvasMainBgcolor,gridStrokeColor,gridShadowColor,circleStrokeColor,circleFillColor,textFillColor){
-
+canvasMainBgcolor = 'white'; gridStrokeColor= '#FFE793'; gridShadowColor = '#FFE9AD'; circleStrokeColor ='#F7976F'; circleFillColor= '#FED376'; textFillColor = '#000000';
 /*  create stage for main canvas  */
 stage = new Konva.Stage({
     container: 'canvas',                  // Canvas container
@@ -102,6 +104,7 @@ canvasGridLayer = new Konva.Layer();         //  a Layer2 for canvas Grid
 var gridRectGroup = new Konva.Group();
 var gridCircleGroup = new Konva.Group();
 var gridTextGroup = new Konva.Group();
+var gridHiddenTextGroup = new Konva.Group({name:'hiddenGroup', visible: false});
 
 /*  Layers creation ends here! */
 
@@ -280,31 +283,359 @@ canvasGridLayer.on('mouseover', function(evt) {
   }
 });
 /*  Layer2 Create a grid on canvas work ends here!*/
-canvasGridLayer.add(gridRectGroup,gridCircleGroup,gridTextGroup);
+canvasGridLayer.add(gridRectGroup,gridCircleGroup,gridTextGroup,gridHiddenTextGroup);
 stage.add(backgroundCanvas,canvasGridLayer);          // Add Layer to stage
 json = stage.toJSON();      // Save entire canvas as json
 //console.log(json);
-}
-/*
-      ===============================
-      initiate canvas on window load
-      ===============================
-*/
-$( window ).on( "load", function() {
-    /* Canvas initiate funtion with parameters
-      * Parameter1 : Initial canvas main background color.
-      * Parameter2 : Grid stroke color.
-      * Parameter3 : Grid shadow color.
-      * Parameter4 : Circle stroke color.
-      * Parameter5 : Circle Fill color.
-      * Parameter6 : Text Fill color
-      */
-    canvasInit('white','#FFE793','#FFE9AD','#F7976F','#FED376','#000000');
+
+$("#textModal").draggable({
+handle: ".modal-header"
+});
+
+/*  Text field value on keyup  */
+  $("#textfill").keyup(function() {
+    updateSample($("#textfill").val(),$('#textFontSelect').val(),$('#textFontsize').val(),$("#textFontBold").prop("checked"), $("#textFontItalic").prop("checked"),$('#myRange').val())
+    updateSample1($("#textfill").val(),$('#textFontSelect').val(),$('#textFontsize').val(),$("#textFontBold").prop("checked"), $("#textFontItalic").prop("checked"),$('#myRange').val())
+  });
+
+  /* Text font family value on change  */
+  $('#textFontSelect').change(function(){
+      updateSample($("#textfill").val(),$('#textFontSelect').val(),$('#textFontsize').val(),$("#textFontBold").prop("checked"), $("#textFontItalic").prop("checked"),$('#myRange').val())
+      updateSample1($("#textfill").val(),$('#textFontSelect').val(),$('#textFontsize').val(),$("#textFontBold").prop("checked"), $("#textFontItalic").prop("checked"),$('#myRange').val())
+  });
+
+  /* Text Font size value on change  */
+  $('#textFontsize').change(function(){
+      updateSample($("#textfill").val(),$('#textFontSelect').val(),$('#textFontsize').val(),$("#textFontBold").prop("checked"), $("#textFontItalic").prop("checked"),$('#myRange').val())
+      updateSample1($("#textfill").val(),$('#textFontSelect').val(),$('#textFontsize').val(),$("#textFontBold").prop("checked"), $("#textFontItalic").prop("checked"),$('#myRange').val())
+  });
+  /* Text Font Bold value on change  */
+  $('#textFontBold').change(function(){
+      updateSample($("#textfill").val(),$('#textFontSelect').val(),$('#textFontsize').val(),$("#textFontBold").prop("checked"), $("#textFontItalic").prop("checked"),$('#myRange').val())
+      updateSample1($("#textfill").val(),$('#textFontSelect').val(),$('#textFontsize').val(),$("#textFontBold").prop("checked"), $("#textFontItalic").prop("checked"),$('#myRange').val())
+  });
+  /* Text Font Italic value on change  */
+  $('#textFontItalic').change(function(){
+      updateSample($("#textfill").val(),$('#textFontSelect').val(),$('#textFontsize').val(),$("#textFontBold").prop("checked"), $("#textFontItalic").prop("checked"),$('#myRange').val())
+      updateSample1($("#textfill").val(),$('#textFontSelect').val(),$('#textFontsize').val(),$("#textFontBold").prop("checked"), $("#textFontItalic").prop("checked"),$('#myRange').val())
+  });
+
+  var slider = document.getElementById("myRange");
+  slider.oninput = function() {
+    updateSample($("#textfill").val(),$('#textFontSelect').val(),$('#textFontsize').val(),$("#textFontBold").prop("checked"), $("#textFontItalic").prop("checked"),this.value)
+    updateSample1($("#textfill").val(),$('#textFontSelect').val(),$('#textFontsize').val(),$("#textFontBold").prop("checked"), $("#textFontItalic").prop("checked"),this.value)
+  }
+  // CREATE KONVE STAGE AND LAYER for popup sample canvas starts here!
+    var updateSampleStage = new Konva.Stage({
+     container: 'textSample',
+     width: 360,
+     height: 200
+    });
+
+    updateSampleStage.getContainer().style.border = '1px solid grey';
+    var updateSampleLayer = new Konva.Layer();
+    updateSampleStage.add(updateSampleLayer);
+    var updateSampleGroup = new Konva.Group();
+    function updateSample(textpara,fontfamily,textsize,bold,italic,weight) {
+        var f = getText(textpara,fontfamily,textsize,bold,italic,weight)
+        updateSampleLayer.clearBeforeDraw(true);
+        updateSampleLayer.clearCache();
+        updateSampleGroup.destroy();
+        updateSampleLayer.draw();
+        var q = 9;
+        if (q >= 10) {
+            q = 5
+        }
+        var g = applyDeselRatio(q);
+        var d = Math.ceil(updateSampleStage.width() / g);
+        var p = Math.ceil(updateSampleStage.height() / q);
+        var o = Math.max(0, Math.floor((f.width - d) / 2));
+        var m = Math.max(0, Math.floor((f.height - p) / 2));
+        var j = Math.min(f.width, 1 + Math.ceil((f.width + d) / 2));
+        var h = Math.min(f.height, 1 + Math.ceil((f.height + p) / 2));
+        var b = Math.floor(updateSampleStage.width() / 2 - g * f.width / 2);
+        var a = Math.floor(updateSampleStage.height() / 2 - q * f.height / 2);
+        for (var l = m; l < h; l++) {
+            var k = (false && (l & 1)) ? Math.round(g / 2) : 0;
+            for (var n = o; n < j; n++) {
+                var e = (l * f.width + n) * 4;
+
+                var fillStyle = f.data[e + 3] == 255 ? "#000000" : "#ffffff";
+                var complexText = new Konva.Text({
+                  x: b + n * g + k,
+                  y: a + l * q,
+                  text: 'X',
+                  fill: fillStyle,
+                  align: 'center',
+                });
+                updateSampleGroup.add(complexText);
+            }
+        }
+        updateSampleLayer.add(updateSampleGroup);
+        updateSampleLayer.draw();
+        updateSampleStage.draw();
+    }
+    // popup sample canvas ends here!
+
+    function updateSample1(textpara,fontfamily,textsize,bold,italic,weight) {
+        var f = getText(textpara,fontfamily,textsize,bold,italic,weight)
+        canvasGridLayer.clearBeforeDraw(true);
+        canvasGridLayer.clearCache();
+        gridHiddenTextGroup.destroy();
+        canvasGridLayer.draw();
+        var q = gridSize;
+        var g = applyDeselRatio(q);
+        var d = Math.ceil(stage.width() / g);
+        var p = Math.ceil(stage.height() / q);
+        var o = Math.max(0, Math.floor((f.width - d) / 2));
+        var m = Math.max(0, Math.floor((f.height - p) / 2));
+        var j = Math.min(f.width, 1 + Math.ceil((f.width + d) / 2));
+        var h = Math.min(f.height, 1 + Math.ceil((f.height + p) / 2));
+        var b = Math.floor(stage.width() / 2 - g * f.width / 2);
+        var a = Math.floor(stage.height() / 2 - q * f.height / 2);
+        for (var l = m; l < h; l++) {
+            var k = (false && (l & 1)) ? Math.round(g / 2) : 0;
+            for (var n = o; n < j; n++) {
+                var e = (l * f.width + n) * 4;
+                var fillStyle = f.data[e + 3] == 255 ? "#000000" : "#ffffff";
+                var complexText = new Konva.Text({
+                  x: b + n * g + k,
+                  y: a + l * q,
+                  text: 'X',
+                  fill: fillStyle,
+                  align: 'center',
+                });
+                gridHiddenTextGroup.add(complexText);
+                // complexText.draw();
+            }
+        }
+        canvasGridLayer.add(gridHiddenTextGroup);
+        gridHiddenTextGroup.draw();
+        stage.batchDraw();
+    }
+
+
+    function getText(textpara, b, m, h, g,weight)
+    {
+      this.canvas = document.createElement("canvas");
+      this.canvas.width = 200;
+      this.canvas.height = 200;
+      this.ctx = this.canvas.getContext("2d")
+
+      this.ctx.clearRect(0, 0, 600, 600);
+      this.ctx.fillStyle = "#000000";
+      var d = fontSpec(b, m, h, g);
+      this.ctx.font = d;
+      var c = this.ctx.measureText(textpara);
+      var p = getTextHeight(d);
+      this.ctx.fillText(textpara, 0, p.ascent);
+
+      var k = Math.max(1, c.width);
+      var e = this.ctx.getImageData(0, 0, k, p.height);
+
+      var n = 600;
+      var j = 0;
+      for (var f = 3; f < e.data.length; f += 4) {
+
+          var a = 0;
+          if (e.data[f] >= weight) {
+              a = 255;
+              var l = (f / 4) % k;
+              n = Math.min(n, l);
+              j = Math.max(j, l)
+          }
+          e.data[f] = a
+      }
+      this.textWidth = 1 + j - n;
+      if (this.textWidth > 580) {
+          this.textWidth = c.width
+      }
+      return e
+    }
+    function fontSpec(e, d, c, b)
+    {
+        var a = "";
+        if (b) {
+            a += "italic "
+        }
+        if (c) {
+            a += "bold "
+        }
+        return a + d + "px " + e
+    }
+
+    function getTextHeight(c)
+    {
+        var e = $('<span style="font: ' + c + '">Hg</span>');
+        var d = $('<div style="display: inline-block; width: 1px; height: 0px;"></div>');
+        var f = $("<div></div>");
+        f.append(e, d);
+        var b = $("body");
+        b.append(f);
+        try {
+            var a = {};
+            d.css({
+                verticalAlign: "baseline"
+            });
+            a.ascent = d.offset().top - e.offset().top;
+            d.css({
+                verticalAlign: "bottom"
+            });
+            a.height = d.offset().top - e.offset().top;
+            a.descent = a.height - a.ascent
+        } finally {
+            f.remove()
+        }
+        return a
+    }
+
+    function applyDeselRatio(b) {
+        var deselRatio = 1;
+        var a = b * deselRatio;
+        if (deselRatio >= 1) {
+            a = Math.floor(a)
+        } else {
+            a = Math.ceil(a)
+        }
+        return a
+    }
+
+    $("#cloneSampleText").click(function()
+    {
+        $( gridHiddenTextGroup.children ).each(function(key, val)
+        {
+           if(val.attrs.fill === '#ffffff')
+           {
+              val.destroy();
+              // canvasGridLayer.draw();
+           }
+           val.fontSize(txtFillSize);
+           var xx = (Math.round(val.attrs.x / gridSize) * gridSize), yy = (Math.round(val.attrs.y / gridSize) * gridSize);
+           val.attrs.x = xx;
+           val.attrs.y = yy;
+           val.attrs.fill = textFillColor;
+           val.attrs.transformsEnabled = 'position';
+        });
+        $('.close').click();
+        $('#popupForm')[0].reset();
+        updateSampleGroup.destroy();
+        updateSampleLayer.draw();
+        newfunction(gridHiddenTextGroup);
+    });
+    var toAnimate = true;
+    function newfunction(aa)
+    {
+
+          var canvasPos = getPosition(stage);
+          var mouseX = 0;
+          var mouseY = 0;
+          var posmin;
+          if(Math.round(gridSize) >= 20)
+          {
+            posmin = 320;
+          }
+          else if(Math.round(gridSize) >= 10)
+          {
+            posmin = 290;
+          }
+          else {
+            console.log(1)
+            posmin = 210;
+          }
+
+          canvasGridLayer.addEventListener("mousemove", function setMousePosition(e){
+            mouseX = e.layerX - canvasPos.x-posmin;
+            mouseY = e.layerY - canvasPos.y-posmin;
+            if(toAnimate){
+              update(mouseX,mouseY,aa);
+            }
+          }, false);
+          canvasGridLayer.addEventListener("click", stopfollow, false);
+    }
+    function getPosition(el)
+    {
+          var xPosition = 0;
+          var yPosition = 0;
+          var offsetLeft = el.content.offsetLeft;
+          var scrollLeft = el.content.scrollLeft;
+          var clientLeft = el.content.clientLeft;
+
+          var offsetTop = el.content.offsetTop;
+          var scrollTop = el.content.scrollTop;
+          var clientTop = el.content.clientTop;
+
+          var offsetParent = el.content.offsetParent;
+          while (el) {
+            // console.log(el)
+            xPosition += (offsetLeft - scrollLeft + clientLeft);
+            yPosition += (offsetTop - scrollTop + clientTop);
+            el = offsetParent;
+            break;
+          }
+          return {
+            x: xPosition,
+            y: yPosition
+          };
+    }
+    function update(mouseX,mouseY,aa)
+    {
+        canvasGridLayer.clearBeforeDraw(true);
+        canvasGridLayer.clearCache();
+        $(canvasGridLayer.children).each(function(key, val){
+          if(val.attrs.name === "sampleGroupCloned"){
+            val.destroy();
+          }
+        })
+        canvasGridLayer.draw();
+        var b = aa.clone({x:mouseX, y: mouseY, name:'sampleGroupCloned', visible:true});
+        canvasGridLayer.add(b);
+        b.draw();
+    }
+    function stopfollow(e)
+    {
+      gridHiddenTextGroup.destroy();
+      canvasGridLayer.draw();
+      var groups = stage.find(node => {
+        return node.getType() === 'Group';
+      });
+      var RectList = canvasGridLayer.find("Rect");
+
+      $( groups).each(function(key, val) {
+          if(val.attrs.name === "sampleGroupCloned")
+           {
+             val.position({
+               x: Math.round(val.x() / gridSize) * gridSize,
+               y: Math.round(val.y() / gridSize) * gridSize
+             });
+             canvasGridLayer.draw();
+             var fillTextArr = [];
+             $(val.children).each(function(key,ctextval){
+               var xVal = ctextval.attrs.x
+               var yVal = ctextval.attrs.y
+               fillTextArr.push(`{x : ${xVal},y : ${yVal}}`)
+             })
+             $( RectList ).each(function(key, rectval) {
+                var xY = `{x : ${rectval.attrs.x},y : ${rectval.attrs.y}}`
+
+                if(fillTextArr.indexOf(xY) !== -1)
+                {
+                  rectval.attrs.filled = true;
+                  // selected_rect.push(rectval);
+                }
+              });
+          }
+      });
+      toAnimate = false;
+      $('.toolbar_list li').removeClass('active');
+      $("#select_shape").addClass('active');
+      mode = $("#select_shape").data('mode')
+    }
+
 });
 
      </script>
 <div class="col-md-12 canvas_container">
-                    <div class="col-md-6 float-left canvas_content">
+                    <div class="col-md-10 float-left canvas_content">
                         <div id="canvas"></div>
                     </div>
                     <div class="col-md-2">
@@ -319,7 +650,7 @@ $( window ).on( "load", function() {
                             <li class="canvas_tool" id="" data-mode="hand">
                                 <i class="fa fa-hand-rock-o" aria-hidden="true"></i></i>
                             </li>
-                            <li class="canvas_tool" id="" data-mode="text">
+                            <li class="canvas_tool" id="text_modal" data-mode="text" title="Text" data-toggle="modal" data-target="#textModal" data-backdrop="false" >
                                 <i class="fa fa-text-width" aria-hidden="true"></i>
                             </li>
                             <li class="canvas_tool" id="refresh_canvas" data-mode="refresh">
@@ -327,25 +658,114 @@ $( window ).on( "load", function() {
                             </li>
                         </ul>
                     </div>
-                    <div class="col-md-4 float-left canvas_tool_bar">
-                      <h3>Canvas Colors Section</h3>
-                        <p class="font-weight-bold text-left">
-                          Click to change canvas background color
-                          <button class="btn btn-success show-colors-btn" data-toggle="collapse" data-target="#pattel_container"> + </button>
-                        </p>
-                        <div class="color_pattel_container collapse text-left" id="pattel_container">
-                        </div>
-
-                        <p class="font-weight-bold text-left">
-                          Click to change text color
-                          <button class="btn btn-success show-text-colors-btn" data-toggle="collapse" data-target="#text_pattel_container"> + </button>
-                        </p>
-                        <div class="text_color_pattel_container collapse text-left" id="text_pattel_container">
-                        </div>
-
-                        <!-- <p>Grid Width: <input type="text" id="grid_width" value="20" onkeyup="grid_width_change()"></p>
-                        <p>Grid Height: <input type="text" id="grid_height" value="20" onkeyup="grid_height_change()"></p>
-                        <button onclick="restart();"  title="Clears this grid">Clear</button>
-                    </div> -->
-                </div>
             </div>
+
+            <!-- Modal -->
+            <div id="textModal" class="modal fade">
+                <div class="modal-dialog">
+                    <div class="col-md-12 modal-content">
+                        <div class="modal-header">
+                            <h4 class="modal-title">Draw Text</h4>
+                            <button type="button" class="close" data-dismiss="modal" aria-hidden="true">&times;</button>
+                        </div>
+                        <div class="modal-body">
+                          <form class="form-horizontal" id="popupForm">
+                          <div class="form-group">
+                                <label class="control-label col-sm-2" for="email">Text</label>
+                                <div class="col-sm-10">
+                                  <input type="text" class="form-control" id="textfill" autofocus>
+                                </div>
+                            </div>
+                              <div class="form-group">
+                                <label class="control-label col-sm-2" for="pwd">Font:</label>
+                                <div class="col-sm-10">
+                                  <select id="textFontSelect" class="popup_font_family">
+                                    <option value="sans-serif" style="font-family:'sans-serif';">sans-serif</option>
+                                    <option value="serif" style="font-family:'serif';">serif</option>
+                                    <option value="monospace" style="font-family:'monospace';">monospace</option>
+                                    <option value="American Typewriter" style="font-family:'American Typewriter';">American Typewriter</option>
+                                    <option value="Andale Mono" style="font-family:'Andale Mono';">Andale Mono</option>
+                                    <option value="Apple Chancery" style="font-family:'Apple Chancery';">Apple Chancery</option>
+                                    <option value="Arial" style="font-family:'Arial';">Arial</option>
+                                    <option value="Arial Black" style="font-family:'Arial Black';">Arial Black</option>
+                                    <option value="Baskerville" style="font-family:'Baskerville';">Baskerville</option>
+                                    <option value="Big Caslon" style="font-family:'Big Caslon';">Big Caslon</option>
+                                    <option value="Charter" style="font-family:'Charter';">Charter</option>
+                                    <option value="Comic Sans MS" style="font-family:'Comic Sans MS';">Comic Sans MS</option>
+                                    <option value="Copperplate" style="font-family:'Copperplate';">Copperplate</option>
+                                    <option value="Courier" style="font-family:'Courier';">Courier</option>
+                                    <option value="Courier New" style="font-family:'Courier New';">Courier New</option>
+                                    <option value="cursive" style="font-family:'cursive';">cursive</option>
+                                    <option value="fantasy" style="font-family:'fantasy';">fantasy</option>
+                                    <option value="Futura" style="font-family:'Futura';">Futura</option>
+                                    <option value="Georgia" style="font-family:'Georgia';">Georgia</option>
+                                    <option value="Gill Sans" style="font-family:'Gill Sans';">Gill Sans</option>
+                                    <option value="Helvetica" style="font-family:'Helvetica';">Helvetica</option>
+                                    <option value="Herculanum" style="font-family:'Herculanum';">Herculanum</option>
+                                    <option value="Hoefler Text" style="font-family:'Hoefler Text';">Hoefler Text</option>
+                                    <option value="Impact" style="font-family:'Impact';">Impact</option>
+                                    <option value="Lucida Grande" style="font-family:'Lucida Grande';">Lucida Grande</option>
+                                    <option value="Marker Felt" style="font-family:'Marker Felt';">Marker Felt</option>
+                                    <option value="Optima" style="font-family:'Optima';">Optima</option>
+                                    <option value="Osaka" style="font-family:'Osaka';">Osaka</option>
+                                    <option value="Palatino" style="font-family:'Palatino';">Palatino</option>
+                                    <option value="Papyrus" style="font-family:'Papyrus';">Papyrus</option>
+                                    <option value="Skia" style="font-family:'Skia';">Skia</option>
+                                    <option value="Symbol" style="font-family:'Symbol';">Symbol</option>
+                                    <option value="Tahoma" style="font-family:'Tahoma';">Tahoma</option>
+                                    <option value="Times" style="font-family:'Times';">Times</option>
+                                    <option value="Times New Roman" style="font-family:'Times New Roman';">Times New Roman</option>
+                                    <option value="Trebuchet MS" style="font-family:'Trebuchet MS';">Trebuchet MS</option>
+                                    <option value="Verdana" style="font-family:'Verdana';">Verdana</option>
+                                    <option value="Webdings" style="font-family:'Webdings';">Webdings</option>
+                                    <option value="Zapf Dingbats" style="font-family:'Zapf Dingbats';">Zapf Dingbats</option>
+                                    <option value="Zapfino" style="font-family:'Zapfino';">Zapfino</option>
+                                  </select>
+                                </div>
+                              </div>
+                              <div class="form-group">
+                                <label class="control-label col-sm-2" for="pwd">Size:</label>
+                                <div class="col-sm-10">
+                                  <input type="number" class="form-control" id="textFontsize" value="12">
+                                </div>
+                              </div>
+                              <div class="form-group">
+                                <label class="control-label col-sm-2" for="pwd">Bold:</label>
+                                <div class="col-sm-10">
+                                  <input type="checkbox" name='bold' id='textFontBold'/>
+                                </div>
+                              </div>
+                              <div class="form-group">
+                                <label class="control-label col-sm-2" for="pwd">Italic:</label>
+                                <div class="col-sm-10">
+                                  <input type="checkbox" name='italic' id='textFontItalic'/>
+                                </div>
+                              </div>
+                              <div class="form-group">
+                                <label class="control-label col-sm-2" for="pwd">Weight:</label>
+                                <div class="col-sm-10">
+                                  <div class="slidecontainer">
+                                    <input type="range" min="20" max="220" value="100" class="slider" id="myRange">
+                                    <span class="float-left text-left">Light</span> <span class="float-right text-right"> Dark</span>
+                                  </div>
+                                </div>
+                              </div>
+                              <div class="form-group">
+                                <label class="control-label col-sm-2" for="pwd">Sample:</label>
+                                <div class="col-sm-10">
+                                  <div id="textSample"></div>
+                                  <!-- <div id="textSample1" style="display:none;"></div> -->
+                                </div>
+                              </div>
+
+                            </form>
+                        </div>
+                        <div class="modal-footer">
+                            <button id="cloneSampleText" type="button" class="btn btn-primary">Ok</button>
+                        </div>
+                    </div>
+                    <!-- /.modal-content -->
+                </div>
+                <!-- /.modal-dialog -->
+            </div>
+            <!-- /.modal -->
