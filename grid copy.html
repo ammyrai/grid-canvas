@@ -6,8 +6,6 @@
  <script src="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.7/js/bootstrap.min.js"></script>
  <script src="https://cdnjs.cloudflare.com/ajax/libs/jqueryui/1.12.1/jquery-ui.min.js"></script>
  <style>
-     /*  Color Pattel style  */
-
 ul.my-new-list, ul.text-color-list {
     float: left;
     width: 100%;
@@ -19,8 +17,6 @@ ul.my-new-list .color_pattel , ul.text-color-list li {
   display: inline-block;
   height: 20px;
 }
-
-
 .canvas_container h3 {
     background: #d6cece;
     padding: 8px;
@@ -35,7 +31,6 @@ ul.toolbar_list {
     margin: 0;
     padding: 0;
 }
-
 ul.toolbar_list li {
   float: left;
   width: 47%;
@@ -48,8 +43,7 @@ ul.toolbar_list li {
 ul.toolbar_list li:hover,  ul.toolbar_list li.active{
     background: #efe8e8;
 }
-
- </style>
+</style>
  <script>
  $( window ).on( "load", function() {
      /*    Konva canvas file   */
@@ -73,6 +67,7 @@ var stageWidth = 805,
     circleStrokeCPara,                  // Circle Stroke Color code parameter
     circleFillCPara,                    // Circle Fill Color code parameter
     cr,
+    lineStroke,                         // Line width for back stitch
     json,                               // Json variable for final canvas output
     txtFillSize = Math.round(gridSize);
 
@@ -109,14 +104,18 @@ backgroundCanvas.add(stageRect);
 if(Math.round(gridSize) >= 20)
 {
   cr = 2;
+  lineStroke = 4;
 }
 else if(Math.round(gridSize) >= 10)
 {
   cr = 1;
+  lineStroke = 3;
 }
 else {
   cr = 0;
+  lineStroke = 1;
 }
+
 /*  Layer2 Create a grid on canvas work starts here!*/
 
 for (var ix = 0; ix < canvasWidth; ix++) {
@@ -168,43 +167,58 @@ canvasGridLayer.on('mousedown', function(evt)
     switch (mode)
     {
        case 'pencil':
-       if(box.attrs.filled == false)
-       {
-               box.shadowEnabled(false);
+         if(box.attrs.filled == false)
+         {
+                 box.shadowEnabled(false);
 
-               text = new Konva.Text({
-                text: 'X',
-                 x: box.attrs.x,
-                 y: box.attrs.y,
-                 fontFamily: 'sans-serif',
-                 fontSize: txtFillSize,
-                 fill: textFillColor,
-                 fontStyle : 'normal',
-                 filled : true,
-               });
-               box['filled'] = true;
-               box.height = text.getHeight();
-               gridTextGroup.add(text);
+                 text = new Konva.Text({
+                  text: 'X',
+                   x: box.attrs.x,
+                   y: box.attrs.y,
+                   fontFamily: 'sans-serif',
+                   fontSize: txtFillSize,
+                   fill: textFillColor,
+                   fontStyle : 'normal',
+                   filled : true,
+                 });
+                 box['filled'] = true;
+                 box.height = text.getHeight();
+                 gridTextGroup.add(text);
                gridTextGroup.draw();
            }
        break;
        case 'eraser':
-       if(box.attrs.filled == true)
-       {
-          if(evt.target.className == 'Text')
-          {
-              evt.target.destroy();
-              box.attrs.filled = false;
-              box.shadowEnabled(true);
-          }
-       }
-       canvasGridLayer.batchDraw();
+         if(box.attrs.filled == true)
+         {
+            if(evt.target.className == 'Text')
+            {
+                evt.target.destroy();
+                box.attrs.filled = false;
+                box.shadowEnabled(true);
+            }
+         }
+         canvasGridLayer.batchDraw();
        break;
-       case 'hand':
-         console.log('Hand Mode!');
+       case 'back_stich':
+          points=[];
+
+           var secondX = nearest(evt.evt.layerX,box.attrs.x,box.attrs.x+gridSize);
+           var secondY = nearest(evt.evt.layerY,box.attrs.y,box.attrs.y+gridSize);
+           points.push(box.attrs.x,box.attrs.y,secondX,secondY)
+           var line = new Konva.Line({
+               points :points,
+               stroke: '#000000',
+               strokeWidth: lineStroke,
+               drawLine : true,
+               tension: 0,
+               perfectDrawEnabled: false,
+           });
+           box.attrs.lineDraw = true;
+           canvasGridLayer.add(line);
+           line.draw();
+           // canvasGridLayer.draw();
        break;
        case 'text':
-         console.log('Text Mode!');
        break;
        default:
 
@@ -213,6 +227,16 @@ canvasGridLayer.on('mousedown', function(evt)
 });
 canvasGridLayer.on('mouseup',function(evt){
   isMouseDown= false
+  box = evt.target;
+  switch (mode)
+  {
+     case 'back_stich':
+          var line = canvasGridLayer.find("Line");
+         line[line.length-1].attrs.drawLine = false;
+     break;
+     default:
+     // stage.container().style.cursor = 'pointer';
+   }
 })
 
 canvasGridLayer.on('mouseover', function(evt) {
@@ -223,53 +247,85 @@ canvasGridLayer.on('mouseover', function(evt) {
     switch (mode)
     {
        case 'pencil':
-       if(box.attrs.filled == false)
-       {
-               box.shadowEnabled(false);
-               text = new Konva.Text({
-                text: 'X',
-                 x: box.attrs.x,
-                 y: box.attrs.y,
-                 fontFamily: 'sans-serif',
-                 fontSize: txtFillSize,
-                 fill: textFillColor,
-                 fontStyle : 'normal',
-                 filled : true,
-               });
-               box['filled'] = true;
-               box.height = text.getHeight();
-               gridTextGroup.add(text);
+           if(box.attrs.filled == false)
+           {
+                   box.shadowEnabled(false);
+                   text = new Konva.Text({
+                    text: 'X',
+                     x: box.attrs.x,
+                     y: box.attrs.y,
+                     fontFamily: 'sans-serif',
+                     fontSize: txtFillSize,
+                     fill: textFillColor,
+                     fontStyle : 'normal',
+                     filled : true,
+                   });
+                   box['filled'] = true;
+                   box.height = text.getHeight();
+                   gridTextGroup.add(text);
                gridTextGroup.draw();
             }
        break;
        case 'eraser':
-       if(box.className == 'Rect' && box.attrs.filled == true)
-       {
-          var textList = canvasGridLayer.find("Text");
-          $( textList ).each(function(key, val) {
-             val.on('mouseenter', function(evt) {
-               if(evt.target.className == 'Text')
-               {
-                 evt.target.destroy();
-               }
-             });
-         });
-         box.attrs.filled = false;
-         box.shadowEnabled(true);
-       }
-       canvasGridLayer.batchDraw();
+         if(box.className == 'Rect' && box.attrs.filled == true)
+         {
+            var textList = canvasGridLayer.find("Text");
+            $( textList ).each(function(key, val) {
+               val.on('mouseenter', function(evt) {
+                 if(evt.target.className == 'Text')
+                 {
+                   evt.target.destroy();
+                 }
+               });
+           });
+           box.attrs.filled = false;
+           box.shadowEnabled(true);
+         }
+         canvasGridLayer.batchDraw();
        break;
-       case 'hand':
-         console.log('Hand Mode!');
+       case 'back_stich':
+
+           points=[];
+
+           var line = canvasGridLayer.find("Line");
+
+           var last_two_values = line[line.length-1].points().slice(-2);
+
+           if((typeof box.attrs.x !== "undefined") || ( typeof box.attrs.y !== "undefined")){
+             var secondX = nearest(evt.evt.layerX,box.attrs.x,box.attrs.x+Math.round(gridSize));
+             var secondY = nearest(evt.evt.layerY,box.attrs.y,box.attrs.y+Math.round(gridSize));
+             points.push((Math.round(last_two_values[0]/ gridSize) * gridSize),(Math.round(last_two_values[1] / gridSize) * gridSize),(Math.round(secondX / gridSize) * gridSize),(Math.round(secondY / gridSize) * gridSize));
+             var line = new Konva.Line({
+                  points :points,
+                  stroke: '#000000',
+                  strokeWidth: lineStroke,
+                  drawLine : true,
+                  tension: 0,
+                  perfectDrawEnabled: false,
+              });
+              box.attrs.lineDraw = true;
+              canvasGridLayer.add(line);
+              line.draw();
+           }
        break;
        case 'text':
-         console.log('Text Mode!');
        break;
        default:
 
     }
   }
 });
+function nearest(value, min, max)
+{
+    if((value-min)>(max-value))
+    {
+        return max;
+    }
+    else
+    {
+      return min;
+    }
+}
 /*  Layer2 Create a grid on canvas work ends here!*/
 canvasGridLayer.add(gridRectGroup,gridCircleGroup,gridTextGroup,gridHiddenTextGroup);
 stage.add(backgroundCanvas,canvasGridLayer);          // Add Layer to stage
