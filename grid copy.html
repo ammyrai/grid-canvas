@@ -76,18 +76,6 @@ var stageWidth = 805,
     json,                               // Json variable for final canvas output
     txtFillSize = Math.round(gridSize);
 
-/*
-      =========================================================
-      * canvasInit(Para1, Para2, Para3, Para3, Para4, Para5)
-      * Canavs initiation function with 5 parameters
-      * Para1 : Canvas Background Color code
-      * Para2 : Grid Stroke Color code parameter
-      * Para3 : Grid Stroke Color code parameter
-      * Para4 : Circle Stroke Color code parameter
-      * Para5 : Circle Fill Color code parameter
-      =========================================================
-
-*/
 canvasMainBgcolor = 'white'; gridStrokeColor= '#FFE793'; gridShadowColor = '#FFE9AD'; circleStrokeColor ='#F7976F'; circleFillColor= '#FED376'; textFillColor = '#000000';
 /*  create stage for main canvas  */
 stage = new Konva.Stage({
@@ -104,7 +92,7 @@ canvasGridLayer = new Konva.Layer();         //  a Layer2 for canvas Grid
 var gridRectGroup = new Konva.Group();
 var gridCircleGroup = new Konva.Group();
 var gridTextGroup = new Konva.Group();
-var gridHiddenTextGroup = new Konva.Group({name:'hiddenGroup', visible: false});
+var gridHiddenTextGroup = new Konva.Group({name:'hiddenGroup', visible: true});
 
 /*  Layers creation ends here! */
 
@@ -289,7 +277,7 @@ json = stage.toJSON();      // Save entire canvas as json
 //console.log(json);
 
 $("#textModal").draggable({
-handle: ".modal-header"
+  handle: ".modal-header"
 });
 
 /*  Text field value on keyup  */
@@ -406,14 +394,14 @@ handle: ".modal-header"
                   align: 'center',
                 });
                 gridHiddenTextGroup.add(complexText);
-                // complexText.draw();
+
             }
         }
         canvasGridLayer.add(gridHiddenTextGroup);
-        gridHiddenTextGroup.draw();
-        stage.batchDraw();
-    }
 
+        // gridHiddenTextGroup.draw();
+        // stage.batchDraw();
+    }
 
     function getText(textpara, b, m, h, g,weight)
     {
@@ -502,12 +490,12 @@ handle: ".modal-header"
 
     $("#cloneSampleText").click(function()
     {
+
         $( gridHiddenTextGroup.children ).each(function(key, val)
         {
            if(val.attrs.fill === '#ffffff')
            {
               val.destroy();
-              // canvasGridLayer.draw();
            }
            val.fontSize(txtFillSize);
            var xx = (Math.round(val.attrs.x / gridSize) * gridSize), yy = (Math.round(val.attrs.y / gridSize) * gridSize);
@@ -516,16 +504,17 @@ handle: ".modal-header"
            val.attrs.fill = textFillColor;
            val.attrs.transformsEnabled = 'position';
         });
+        gridHiddenTextGroup.width(gridHiddenTextGroup.children.length);
         $('.close').click();
         $('#popupForm')[0].reset();
         updateSampleGroup.destroy();
         updateSampleLayer.draw();
-        newfunction(gridHiddenTextGroup);
+        newfunction();
     });
     var toAnimate = true;
-    function newfunction(aa)
+    function newfunction()
     {
-
+          toAnimate = true;
           var canvasPos = getPosition(stage);
           var mouseX = 0;
           var mouseY = 0;
@@ -539,15 +528,13 @@ handle: ".modal-header"
             posmin = 290;
           }
           else {
-            console.log(1)
             posmin = 210;
           }
-
           canvasGridLayer.addEventListener("mousemove", function setMousePosition(e){
             mouseX = e.layerX - canvasPos.x-posmin;
             mouseY = e.layerY - canvasPos.y-posmin;
             if(toAnimate){
-              update(mouseX,mouseY,aa);
+              update(mouseX,mouseY);
             }
           }, false);
           canvasGridLayer.addEventListener("click", stopfollow, false);
@@ -577,7 +564,7 @@ handle: ".modal-header"
             y: yPosition
           };
     }
-    function update(mouseX,mouseY,aa)
+    function update(mouseX,mouseY)
     {
         canvasGridLayer.clearBeforeDraw(true);
         canvasGridLayer.clearCache();
@@ -587,7 +574,7 @@ handle: ".modal-header"
           }
         })
         canvasGridLayer.draw();
-        var b = aa.clone({x:mouseX, y: mouseY, name:'sampleGroupCloned', visible:true});
+        var b = gridHiddenTextGroup.clone({x:mouseX, y: mouseY, name:'sampleGroupCloned', visible:true});
         canvasGridLayer.add(b);
         b.draw();
     }
@@ -623,6 +610,7 @@ handle: ".modal-header"
                   // selected_rect.push(rectval);
                 }
               });
+              val.attrs.name = "sampleGroupCpoied"
           }
       });
       toAnimate = false;
@@ -647,8 +635,8 @@ handle: ".modal-header"
                             <li class="canvas_tool" id="eraser" data-mode="eraser">
                                 <i class="fa fa-eraser" aria-hidden="true"></i>
                             </li>
-                            <li class="canvas_tool" id="" data-mode="hand">
-                                <i class="fa fa-hand-rock-o" aria-hidden="true"></i></i>
+                            <li class="canvas_tool" id="back_stich" data-mode="back_stich" title="Back Stich">
+                              <img src="back_stich.png" alt="Back Stich" width='54px' height='41px' />
                             </li>
                             <li class="canvas_tool" id="text_modal" data-mode="text" title="Text" data-toggle="modal" data-target="#textModal" data-backdrop="false" >
                                 <i class="fa fa-text-width" aria-hidden="true"></i>
