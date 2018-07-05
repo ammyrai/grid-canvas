@@ -112,9 +112,9 @@ backgroundCanvas.add(stageRect);
 /*  Layer2 Create a grid on canvas work starts here!*/
 
 text = new Konva.Text({
-  text: '',
-  x: '',
-  y: '',
+  text: 'hello',
+  x: '25',
+  y: '50',
   fontFamily: 'sans-serif',
   fontSize: gridSize,
   fill: textFillColor,
@@ -182,37 +182,6 @@ canvasGridLayer.on('mousedown', function(evt)
            }
        break;
        case 'eraser':
-       // if(box.filled == true)
-       //  {
-          // console.log(box)
-
-           // console.log(Konva.Node.prototype.y.call(box));
-          if(box.filled == true)
-          {
-//            Konva.Node.prototype.remove.call(text);
-//            canvasGridLayer.draw();
-             // box.attrs.text= ' ' ;
-             // box.partialText=' ';
-             // box.textArr=[ ];
-             //
-             // text.attrs.text= ' ' ;
-             // text.partialText=' ';
-             // text.textArr=[ ];
-             // text.draw();
-
-           }
-   //}
-       // box.textArr=[];
-       // console.log(text.getAncestors());
-       // box.getAncestors().each(function(node) {
-       //  console.log(node.getId());
-       //  })
-          //console.log(Konva.Node.prototype)
-           //Konva.Node.prototype.remove.call(text);
-           // box.shadowEnabled(true);
-           // box.shadowColor(gridShadowColor);
-           // box.shadowOffset({ x: 3, y: 3 });
-           // canvasGridLayer.draw();
        break;
        case 'hand':
          console.log('Hand Mode!');
@@ -253,83 +222,8 @@ canvasGridLayer.on('mouseover', function(evt) {
 
           if(box.filled == true)
            {
-            // console.log(box)
-
-              // console.log(Konva.Node.prototype.y.call(box));
-             // if(evt.target.className == 'Text')
-             // {
-
-               Konva.Node.prototype.remove.call(text);
-               canvasGridLayer.draw();
-               // box.attrs.text= ' ' ;
-               // box.partialText=' ';
-               // box.textArr=[ ];
-               // box.fill(' ');
-               //
-               // text.fill(' ');
-               // text.attrs.text= ' ' ;
-               // text.partialText=' ';
-               // text.textArr=[ ];
-               // text.index = ' ';
-               // text.textHeight = ' ';
-               // text.textWidth = ' ';
-               // text.draw();
-               // Konva.Node.prototype.remove.call(text);
-               // box = new Konva.Rect({
-               //     x : box.attrs.x,
-               //     y : box.attrs.y,
-               //     width : box.attrs.width ,
-               //     height: box.attrs.height,
-               //     stroke: box.attrs.stroke,
-               //     strokeWidth: box.attrs.strokeWidth,
-               //     lineJoin : box.attrs.lineJoin,
-               //     shadowEnabled : box.attrs.shadowEnabled,
-               //     shadowColor: box.attrs.shadowColor,
-               //     shadowOffset: box.attrs.shadowOffset,
-               //     shadowOpacity: box.attrs.shadowOpacity
-               // });
-               // circle = new Konva.Circle({
-               //   x: box.attrs.x,
-               //   y: box.attrs.y,
-               //   radius: 2,
-               //   stroke: circleStrokeColor,
-               //   strokeWidth: 1,
-               // });
-               // canvasGridLayer.add(box);              // Add rectangle to background layer
-               // canvasGridLayer.add(circle);
-
-               //canvasGridLayer.draw();
-
-
-
-               // var idToRemove =  evt.target["_id"]
-               // if(evt.target.attrs.x === stage.attrs.x && evt.target.attrs.y === stage.attrs.y){
-               //
-               //   //Konva.Node.prototype.remove.call(evt.target);
-               //   //canvasGridLayer.draw();
-               // }
-
-               //console.log(evt);
-               // box.textArr=[]
-               //  box.partialText=''
-               //  box.__proto__.setText('')
-              //  Konva.Node.prototype.remove.call(text.x(box.attrs.x));
-                //canvasGridLayer.draw();
-            // }
-
-
-              //text.remove(index)
-              //Konva.Node.prototype.removeName('text')
-            // box.textArr=[]
-             //box.partialText=''
-             //box.__proto__.setText('')
-             // console.log(evt);
-             // Konva.Node.prototype.remove.call(text);
-             // box['filled'] = false;
-             // box.shadowEnabled(true);
-             // box.shadowColor(gridShadowColor);
-             // box.shadowOffset({  x: 3, y: 3 });
-             //canvasGridLayer.draw();
+                Konva.Node.prototype.remove.call(text);
+                canvasGridLayer.draw();
            }
 
        break;
@@ -347,8 +241,26 @@ canvasGridLayer.on('mouseover', function(evt) {
 /*  Layer2 Create a grid on canvas work ends here!*/
 
 stage.add(backgroundCanvas,canvasGridLayer);          // Add Layer to stage
-json = stage.toJSON();      // Save entire canvas as json
-//console.log(json);
+var newjson = stage.toJSON();
+jsonStage = canvasGridLayer.toDataURL();      // Save entire canvas as json
+$("#download_canvas").click(function(){
+  console.log("Stage json",newjson)
+  save_canvas(jsonStage);
+})
+
+function downloadURI(uri, name) {
+        var link = document.createElement("a");
+        link.download = name;
+        link.href = uri;
+        document.body.appendChild(link);
+        link.click();
+        document.body.removeChild(link);
+        delete link;
+    }
+function save_canvas(jsonStage)
+{
+    downloadURI(jsonStage, 'stage.png');
+}
 }
 /*
       ===============================
@@ -378,39 +290,10 @@ $( window ).on( "load", function() {
                             <li class="canvas_tool active" id="pencil" data-mode="pencil">
                                 <i class="fa fa-pencil" aria-hidden="true"></i>
                             </li>
-                            <li class="canvas_tool" id="eraser" data-mode="eraser">
-                                <i class="fa fa-eraser" aria-hidden="true"></i>
-                            </li>
-                            <li class="canvas_tool" id="" data-mode="hand">
-                                <i class="fa fa-hand-rock-o" aria-hidden="true"></i></i>
-                            </li>
-                            <li class="canvas_tool" id="" data-mode="text">
-                                <i class="fa fa-text-width" aria-hidden="true"></i>
-                            </li>
-                            <li class="canvas_tool" id="refresh_canvas" data-mode="refresh">
-                                <i class="fa fa-refresh" aria-hidden="true"></i>
+                            <li class="canvas_tool" id="download_canvas" data-mode="download" title="Save File" >
+                                <i class="fa fa-download" aria-hidden="true"></i>
                             </li>
                         </ul>
                     </div>
-                    <div class="col-md-4 float-left canvas_tool_bar">
-                      <h3>Canvas Colors Section</h3>
-                        <p class="font-weight-bold text-left">
-                          Click to change canvas background color
-                          <button class="btn btn-success show-colors-btn" data-toggle="collapse" data-target="#pattel_container"> + </button>
-                        </p>
-                        <div class="color_pattel_container collapse text-left" id="pattel_container">
-                        </div>
 
-                        <p class="font-weight-bold text-left">
-                          Click to change text color
-                          <button class="btn btn-success show-text-colors-btn" data-toggle="collapse" data-target="#text_pattel_container"> + </button>
-                        </p>
-                        <div class="text_color_pattel_container collapse text-left" id="text_pattel_container">
-                        </div>
-
-                        <!-- <p>Grid Width: <input type="text" id="grid_width" value="20" onkeyup="grid_width_change()"></p>
-                        <p>Grid Height: <input type="text" id="grid_height" value="20" onkeyup="grid_height_change()"></p>
-                        <button onclick="restart();"  title="Clears this grid">Clear</button>
-                    </div> -->
-                </div>
             </div>
